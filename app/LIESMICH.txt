@@ -1,0 +1,14 @@
+NOVAFit – so wird es eine App auf dem Handy
+
+1. Diesen Ordner (entpackt) auf https://app.netlify.com/drop ziehen (kostenlos).
+   Netlify gibt dir eine Adresse, z. B. https://novafit-xyz.netlify.app
+2. Die Adresse auf dem iPhone in Safari öffnen (Android: Chrome).
+3. iPhone: Teilen-Symbol -> "Zum Home-Bildschirm".  Android: Menü -> "App installieren".
+4. Fertig: Die App hat ein eigenes Symbol, startet im Vollbild und funktioniert auch offline.
+
+Die Daten liegen auf dem Handy. Unter Einstellungen -> "Sichern" kann sie ab und zu eine Sicherung machen.
+Updates: neuen Ordner im Netlify-Projekt unter "Deploys" reinziehen. Adresse und Daten bleiben gleich.
+Erinnerungen: Einstellungen -> Tage + Uhrzeit wählen -> "Zum Kalender".
+
+Hinweis zum Update: Wer die App schon installiert hat, behält alle Trainingsdaten.
+iPhone: Name und Symbol auf dem Home-Bildschirm ändern sich erst, wenn man die App einmal löscht und neu hinzufügt. Vorher unbedingt unter Einstellungen -> "Sichern" eine Sicherung machen und sie danach wieder laden, denn beim Löschen vom Home-Bildschirm gehen die Daten auf dem Handy verloren.
