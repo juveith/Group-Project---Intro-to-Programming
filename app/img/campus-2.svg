@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice"><!-- Platzhalter: durch eigenes Campus-Foto ersetzen (campus-2.jpg) -->
+<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3a46b"/><stop offset=".5" stop-color="#fbd6a8"/><stop offset="1" stop-color="#fdebd3"/></linearGradient></defs>
+<rect width="800" height="1000" fill="url(#s)"/><circle cx="560" cy="420" r="70" fill="#fff1d6"/><rect y="450" width="800" height="110" fill="#2f6a99"/><g fill="#9cc3df" opacity=".5"><rect x="420" y="470" width="280" height="4"/><rect x="470" y="500" width="200" height="4"/></g>
+<path d="M0 560H800V1000H0Z" fill="#e5d3ae"/><path d="M0 1000L300 600H420L800 1000Z" fill="#c9c6bf"/><g fill="#2b2b2b"><rect x="120" y="380" width="8" height="200"/><rect x="660" y="390" width="8" height="200"/></g></svg>
