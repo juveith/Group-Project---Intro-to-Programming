@@ -8,9 +8,9 @@ Group project for Introduction to Programming at NOVA.
 - Dominic Quadflieg
 - Julius Veith
 
-## Die App: My Workout
+## Die App: NOVAFit
 
-Eine Trainings-App fürs Handy (Progressive Web App): Po-Tag, Oberkörper, Laufen und Yoga, mit Fortschritt, Statistik, Kalender, Abzeichen und Erinnerungen.
+Eine Trainings-App im Design der Nova SBE fürs Handy (Progressive Web App): Po-Tag, Oberkörper, Laufen und Yoga, mit Fortschritt, Statistik, Kalender, Abzeichen und Erinnerungen.
 
 Die App besteht aus einer einzigen Seite ohne Build-Schritt:
 

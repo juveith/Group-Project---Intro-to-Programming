@@ -1,4 +1,4 @@
-// Push (OneSignal) + Offline-Cache für My Workout
+// Push (OneSignal) + Offline-Cache für NOVAFit
 importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
 
 // Zahl am App-Symbol: bei Trainings-Erinnerung und Nachfrage eine "1" setzen
@@ -11,7 +11,7 @@ self.addEventListener("push", e => {
   }catch(_){}
 });
 
-const CACHE = "po-plan-v32";
+const CACHE = "novafit-v1";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./OneSignalSDKWorker.js"];
 
 self.addEventListener("install", e => {
