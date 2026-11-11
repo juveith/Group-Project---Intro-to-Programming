@@ -22,6 +22,23 @@ Die App besteht aus einer einzigen Seite ohne Build-Schritt:
 | `app/icon-*.png`, `app/apple-touch-icon.png` | App-Symbole |
 | `app/LIESMICH.txt` | Anleitung zum Installieren auf dem Handy |
 
+## Bilder austauschen
+
+Die Bilder in `app/img/` sind noch Platzhalter-Grafiken:
+
+| Datei | Wo |
+|---|---|
+| `campus-1.svg`, `campus-2.svg` | Großer Foto-Kasten oben auf der Startseite |
+| `gym.svg`, `run.svg`, `yoga.svg` | Bild oben in den Trainingskarten |
+
+So ersetzt ihr sie durch eigene Fotos (am besten JPG, Campus-Fotos im Hochformat, ca. 1200 px breit):
+
+1. Fotos in `app/img/` legen, z. B. `campus-1.jpg`.
+2. In `app/index.html` die Liste `CAMPUS_PHOTOS` anpassen (beliebig viele Fotos) bzw. bei `.simg-gym`, `.simg-run`, `.simg-yoga` den Dateinamen ändern.
+3. In `app/OneSignalSDKWorker.js` die Dateinamen in `FILES` eintragen und `CACHE` um eins erhöhen, damit installierte Apps die neuen Bilder laden.
+
+Nur eigene Fotos oder Fotos mit passender Lizenz verwenden – Bilder von der Nova-Website sind urheberrechtlich geschützt.
+
 ## Starten
 
 - **Lokal:** `app/index.html` im Browser öffnen.

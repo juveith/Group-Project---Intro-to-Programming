@@ -690,17 +690,60 @@ h2.sec::after{content:"";display:block;width:36px;height:6px;margin-top:9px;back
   padding:0 calc(env(safe-area-inset-right) + var(--nf-pad)) 0 calc(env(safe-area-inset-left) + var(--nf-pad))}
 .nf-mark{position:absolute;left:0;top:0;width:0;height:0;color:#000}
 .nf-mark > *{position:absolute;left:0;top:0;display:block;transform-origin:0 0;fill:currentColor}
-.nf-n{width:80px;height:100px}.nf-rest{width:322px;height:100px}.nf-o{width:80px;height:80px}
+.nf-n{width:80px;height:100px}.nf-rest{width:285px;height:100px}.nf-o{width:80px;height:80px}
 .nf-bar{width:100px;height:22px;background:currentColor}
 .nf:not(.nf-on) .nf-mark{visibility:hidden}
 .nf-btns{position:absolute;right:calc(env(safe-area-inset-right) + var(--nf-pad));top:calc(env(safe-area-inset-top) + var(--nf-hmax) / 2 - 21px)}
 .nf .iconbtn{background:#fff;border-color:#dedbe2;color:#111}
 .nf .iconbtn:hover{border-color:#111}
+/* ===== v2.2 Nova-Design: Fotos, Karten mit Bild, Farbblöcke, Menü, Footer ===== */
+.nf .iconbtn.hb{border:0;border-radius:0;background:none;width:46px;color:#000}
+.nf .iconbtn.hb svg{width:30px;height:24px}
+.hero.photo{min-height:360px;background:#0b1d33;padding-bottom:50px}
+.hero .hph img{filter:none}
+.hero .hph .hblur{display:none}
+.hero .hph .hov{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,.08) 25%,rgba(0,0,0,.78) 62%,rgba(0,0,0,.86))}
+.hero.photo h2,.hero.photo > small,.hero.photo p{text-shadow:none}
+.hero .hdots{display:none}
+.hero > .harr{position:absolute;right:0;bottom:0;z-index:2;display:flex;background:#000}
+.harr button{width:40px;height:36px;border:0;background:none;color:#fff;font:700 19px/1 var(--num);cursor:pointer}
+.harr button:hover{background:#333}
+.start{grid-template-columns:6px 1fr 14px;padding:0 0 14px;overflow:hidden;align-items:start}
+.start .simg{grid-column:1/-1;height:118px;background:#222 center/cover no-repeat}
+.simg-gym{background-image:url(img/gym.svg)!important}.simg-run{background-image:url(img/run.svg)!important}.simg-yoga{background-image:url(img/yoga.svg)!important}
+.start .stripe{align-self:stretch}
+.obtn{display:inline-block;margin-top:10px;border:1.5px solid var(--ink);padding:6px 14px;font:700 11px/1.2 var(--num);letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+.start:hover .obtn{background:var(--ink);color:var(--bg)}
+.pblock > .card{border:0;color:#fff;padding:20px 18px}
+.pblock.c-run > .card{background:#005BAA}
+.pblock.c-kraft > .card{background:#4b1a63}
+.pblock > .card *{color:#fff!important;border-color:rgba(255,255,255,.28)!important}
+.pblock .tile{background:transparent!important;padding:4px 2px;text-align:left}
+.pblock .tile b{font-size:26px}
+.pblock .pill{background:rgba(255,255,255,.18)!important}
+.pblock .spark *{stroke:#fff}
+.pblock .goalbar .track{background:rgba(255,255,255,.25)}.pblock .goalbar .track i{display:block;height:100%;background:#fff}
+.pico{display:block;margin-bottom:8px;color:#fff}.pico svg{display:block;width:34px;height:30px}.pico i{display:block;width:34px;height:3px;background:#fff;margin-top:3px}
+.goal .linkbtn{display:inline-block;margin-top:8px;border:1.5px solid var(--ink);padding:5px 10px;font:700 11px/1.2 var(--num);letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+section[id]{scroll-margin-top:calc(var(--nf-hmin) + 14px)}
+.pmenu{display:flex;flex-direction:column;margin:2px 0 14px}
+.pmenu button{display:flex;justify-content:space-between;align-items:baseline;gap:12px;width:100%;background:none;border:0;border-bottom:1px solid var(--line);padding:15px 2px;font:700 21px var(--display);color:var(--ink);cursor:pointer;text-align:left}
+.pmenu small{font:400 13px var(--body);color:var(--muted);text-align:right}
+.pfoot{margin:28px calc(-16px - env(safe-area-inset-right)) calc(-110px - env(safe-area-inset-bottom)) calc(-16px - env(safe-area-inset-left));padding:34px calc(24px + env(safe-area-inset-right)) calc(56px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));background:#000;color:#fff;box-shadow:0 0 0 100vmax #000;clip-path:inset(0 -100vmax)}
+.pf-mark{display:block;width:118px;height:auto;color:#fff;margin-bottom:26px}
+.pf-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pfoot h4{margin:0 0 8px;font:700 17px var(--display);color:#fff}
+.pfoot button{display:block;background:none;border:0;padding:5px 0;color:#fff;opacity:.88;font:14px var(--body);cursor:pointer;text-align:left}
+.pfoot button:hover{opacity:1;text-decoration:underline}
+.btt{display:none}
+@media (min-width:768px){.btt{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:40px;z-index:7;display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;color:var(--ink);font:12px var(--body);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s}.btt.on{opacity:1;pointer-events:auto}.btt span{writing-mode:vertical-rl;transform:rotate(180deg)}.btt i{width:3px;height:22px;background:currentColor}}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}.reveal.in{opacity:1;transform:none}
 </style>
 </head>
 <body>
 <div class="app" id="app"></div>
 <div id="layer"></div>
+<button class="btt" data-act="totop" aria-label="Nach oben"><span>Nach oben</span><i></i></button>
 
 <script>
 /* ================= Plan ================= */
@@ -964,11 +1007,11 @@ function ring(done, goal){
 const NF_MARK = `<div class="nf-mark" role="img" aria-label="NOVAFit">
   <svg class="nf-n" viewBox="0 0 80 100" aria-hidden="true"><path d="M0 100V0H22L58 60V0H80V100H58L22 40V100Z"/></svg>
   <i class="nf-bar" aria-hidden="true"></i>
-  <svg class="nf-o" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="30.5" fill="none" stroke="currentColor" stroke-width="19"/></svg>
-  <svg class="nf-rest" viewBox="0 0 322 100" aria-hidden="true"><path d="M0 0H23L43 66L63 0H86L54 100H32Z"/><path d="M100 0H122L154 100H131L111 34L91 100H68Z"/><path d="M168 0H230V20H190V41H224V61H190V100H168Z"/><path d="M244 32H265V100H244Z"/><circle cx="254.5" cy="13" r="11"/><path d="M283 8H304V32H320V50H304V100H283V50H277V32H283Z"/></svg>
+  <svg class="nf-o" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="30.5" fill="none" stroke="#005BAA" stroke-width="19"/></svg>
+  <svg class="nf-rest" viewBox="0 0 285 100" aria-hidden="true"><path d="M0 0H23L43 66L63 0H86L54 100H32Z"/><path d="M100 0H122L154 100H131L111 34L91 100H68Z"/><g fill="#000" transform="translate(172 0)"><rect x="0" y="0" width="7" height="100"/><rect x="0" y="0" width="50" height="7"/><rect x="0" y="45" width="42" height="7"/><rect x="64" y="34" width="7" height="66"/><circle cx="67.5" cy="15" r="5.5"/><rect x="94" y="8" width="7" height="92"/><rect x="83" y="34" width="30" height="7"/></g></svg>
 </div>`;
 const NF = {m:null, raf:0};
-const NF_U = 80 + 2*12 + 322;            // Breite ohne Balken, in Einheiten (Versalhöhe = 100)
+const NF_U = 80 + 2*12 + 285;            // Breite ohne Balken, in Einheiten (Versalhöhe = 100)
 function nfMount(){
   const h = document.getElementById("nfhead"); if(!h){ NF.m = null; return; }
   const cs = getComputedStyle(document.documentElement), v = n => parseFloat(cs.getPropertyValue(n)) || 0;
@@ -1005,12 +1048,54 @@ window.addEventListener("scroll", () => { if(NF.m && !NF.raf) NF.raf = requestAn
 window.addEventListener("resize", () => { if(NF.m) nfMount(); });
 try{ matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", () => { if(NF.m) nfMount(); }); }catch(e){}
 
+/* ================= v2.2: Menü, Footer, Fotos, Icons ================= */
+/* Campus-Fotos für den großen Kasten oben. Eigene Fotos (Einstellungen → Fotos) haben Vorrang.
+   Zum Austauschen: Bilder nach app/img legen und hier eintragen. */
+const CAMPUS_PHOTOS = [{url:"img/campus-1.svg"}, {url:"img/campus-2.svg"}];
+let HERO_STEP = null, REVEALED = false;
+const smoothOk = () => !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+const HB_ICON = '<svg viewBox="0 0 30 24" aria-hidden="true"><rect y="1" width="30" height="4.5" fill="currentColor"/><rect y="9.75" width="30" height="4.5" fill="currentColor"/><rect y="18.5" width="30" height="4.5" fill="currentColor"/></svg>';
+const pico = d => `<span class="pico" aria-hidden="true"><svg viewBox="0 0 34 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg><i></i></span>`;
+const PICO = {
+  km: pico('<path d="M6 26c4-10 8-14 12-14s6 4 10 4"/><circle cx="8" cy="8" r="4"/><path d="M8 12v5"/>'),
+  runde: pico('<ellipse cx="17" cy="16" rx="13" ry="9"/><circle cx="17" cy="7" r="2.5" fill="currentColor"/>'),
+  tempo: pico('<circle cx="17" cy="17" r="11"/><path d="M17 17l6-5M14 3h6"/>'),
+  kraft: pico('<path d="M4 15h26M7 9v12M11 7v16M23 7v16M27 9v12"/>')
+};
+const NF_MINI = `<svg class="pf-mark" viewBox="0 -10 469 110" role="img" aria-label="NOVAFit"><path fill="currentColor" d="M0 100V0H22L58 60V0H80V100H58L22 40V100Z"/><rect fill="currentColor" x="92" y="78" width="80" height="22"/><circle cx="132" cy="32" r="30.5" fill="none" stroke="#4d9be6" stroke-width="19"/><g fill="currentColor" transform="translate(184 0)"><path d="M0 0H23L43 66L63 0H86L54 100H32Z"/><path d="M100 0H122L154 100H131L111 34L91 100H68Z"/><g transform="translate(172 0)"><rect x="0" y="0" width="7" height="100"/><rect x="0" y="0" width="50" height="7"/><rect x="0" y="45" width="42" height="7"/><rect x="64" y="34" width="7" height="66"/><circle cx="67.5" cy="15" r="5.5"/><rect x="94" y="8" width="7" height="92"/><rect x="83" y="34" width="30" height="7"/></g></g></svg>`;
+function menuSheet(){
+  sheet(`<h3>Menü</h3><nav class="pmenu" aria-label="Menü">
+    <button data-act="settings">Einstellungen <small>Ziel, Profil, Erinnerungen</small></button>
+    <button data-act="runplan">Laufplan <small>Ziel & Wochen</small></button>
+    <button data-act="goto" data-id="sec-cal">Kalender <small>Trainingstage</small></button>
+    <button data-act="goto" data-id="sec-badges">Abzeichen</button>
+    <button data-act="export">Sicherung erstellen <small>Daten exportieren</small></button>
+    <button data-act="menutheme">Dunkelmodus <small>${isDark() ? "an" : "aus"}</small></button>
+  </nav><button class="secondary" data-act="closesheet">Schließen</button>`);
+}
+function footerHtml(){
+  return `<footer class="pfoot"><div class="pf-in">${NF_MINI}<div class="pf-cols">
+    <div><h4>Training</h4><button data-act="runplan">Laufplan</button><button data-act="goto" data-id="sec-cal">Kalender</button><button data-act="goto" data-id="sec-badges">Abzeichen</button></div>
+    <div><h4>Daten</h4><button data-act="settings">Einstellungen</button><button data-act="export">Sicherung erstellen</button><button data-act="menutheme">Dunkelmodus ${isDark() ? "aus" : "an"}</button></div>
+  </div></div></footer>`;
+}
+/* Abschnitte blenden beim ersten Öffnen sanft ein, wenn sie ins Bild scrollen */
+function revealOnce(){
+  if(REVEALED) return; REVEALED = true;
+  if(!smoothOk() || !("IntersectionObserver" in window)) return;
+  const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }), {threshold:.08});
+  document.querySelectorAll("#app > section:not(.hero)").forEach(sec => {
+    if(sec.getBoundingClientRect().top < window.innerHeight) return;
+    sec.classList.add("reveal"); io.observe(sec);
+  });
+}
+window.addEventListener("scroll", () => { const b = document.querySelector(".btt"); if(b) b.classList.toggle("on", window.scrollY > 600); }, {passive:true});
+
 function renderHome(){
   wxLoad();
   const st = stats();
   let h = `<header class="nf" id="nfhead"><div class="nf-in">${NF_MARK}
-    <div class="topbtns nf-btns"><button class="iconbtn" data-act="themetoggle" aria-label="${isDark()?"Hellen Modus einschalten":"Dunkelmodus einschalten"}">${isDark()?sun:moon}</button>
-    <button class="iconbtn" data-act="settings" aria-label="Einstellungen">${gear}</button></div></div></header>`;
+    <div class="topbtns nf-btns"><button class="iconbtn hb" data-act="menu" aria-label="Menü" aria-haspopup="dialog">${HB_ICON}</button></div></div></header>`;
   h += heroHtml(st);
 
   if(push==="install" && !S.settings.hideInstall){
@@ -1031,14 +1116,14 @@ function renderHome(){
   h += `<section><h2 class="sec">Training starten</h2><div class="starts">${ORDER.map(t => {
     const w = W[t], last = st.lastBy[t];
     return `<button class="start ${t===st.next?"next":""}" data-kind="${w.kind}" data-act="start" data-t="${t}">
-      <span class="stripe"></span><span><b>${w.name}${t===st.next?`<span class="tag">Als Nächstes</span>`:""}</b><small>${t==="lauf" && S.settings.runPlan && planNext() ? `${planNext().today ? "Heute laut Plan" : "Als Nächstes"}: ${esc(planNext().label)}` : w.desc}</small>
-      <small>${last?"Zuletzt "+ago(last):"Noch nicht gemacht"}</small>${t==="lauf"?`<small class="wxs" data-wx="short"${WX?"":" hidden"}>${wxShort()}</small>`:""}</span><span class="arrow">›</span></button>`;
+      <span class="simg simg-${w.kind}" aria-hidden="true"></span><span class="stripe"></span><span><b>${w.name}${t===st.next?`<span class="tag">Als Nächstes</span>`:""}</b><small>${t==="lauf" && S.settings.runPlan && planNext() ? `${planNext().today ? "Heute laut Plan" : "Als Nächstes"}: ${esc(planNext().label)}` : w.desc}</small>
+      <small>${last?"Zuletzt "+ago(last):"Noch nicht gemacht"}</small>${t==="lauf"?`<small class="wxs" data-wx="short"${WX?"":" hidden"}>${wxShort()}</small>`:""}<span class="obtn" aria-hidden="true">Starten</span></span></button>`;
   }).join("")}</div></section>`;
 
   h += yearCardHtml();
 
   // Stärker geworden + Diagramme
-  h += `<section><h2 class="sec">Stärker geworden</h2><div class="card">`;
+  h += `<section class="pblock c-kraft"><h2 class="sec">Stärker geworden</h2><div class="card">${PICO.kraft}`;
   if(st.gains.length){
     h += `<p class="bigline">${st.gains[0].n} <em>+${st.gains[0].pct} %</em></p><p class="small muted" style="margin:-6px 0 4px">mehr Kraft als bei deinem ersten Training</p>`;
   }
@@ -1056,18 +1141,18 @@ function renderHome(){
   h += `</div></section>`;
 
   // Laufen
-  h += `<section><h2 class="sec">Laufen</h2><div class="card"><div class="tiles">
-    <div class="tile run"><small>Diesen Monat</small><b class="tnum">${fmt(st.kmMonth)} km</b></div>
-    <button class="tile run tbtn" data-act="runchart" data-k="alster"><small>Beste Alsterrunde</small><b class="tnum">${st.bestAlster?hms(st.bestAlster):"–"}</b></button>
-    <button class="tile run tbtn" data-act="runchart" data-k="pace"><small>Bestes Tempo</small><b class="tnum">${st.bestPace?mmss(st.bestPace):"–"}</b></button>
+  h += `<section class="pblock c-run"><h2 class="sec">Laufen</h2><div class="card"><div class="tiles">
+    <div class="tile run">${PICO.km}<small>Diesen Monat</small><b class="tnum">${fmt(st.kmMonth)} km</b></div>
+    <button class="tile run tbtn" data-act="runchart" data-k="alster">${PICO.runde}<small>Beste Alsterrunde</small><b class="tnum">${st.bestAlster?hms(st.bestAlster):"–"}</b></button>
+    <button class="tile run tbtn" data-act="runchart" data-k="pace">${PICO.tempo}<small>Bestes Tempo</small><b class="tnum">${st.bestPace?mmss(st.bestPace):"–"}</b></button>
   </div>${runGoalsHtml(st)}<p class="small muted" style="margin:0">Insgesamt <b class="tnum" style="color:var(--ink)">${fmt(st.km)} km</b>${st.longest?` · längster Lauf ${fmt(st.longest)} km`:""}</p>${st.alsterN?`<p class="alsterc">🌊 Du hast die Alster schon <b class="tnum">${st.alsterN}×</b> umrundet.</p>`:""}</div></section>`;
 
   // Kalender
-  h += `<section><h2 class="sec">Kalender</h2><div class="card" id="calcard">${calendarHtml()}</div>${yearLinkHtml()}</section>`;
+  h += `<section id="sec-cal"><h2 class="sec">Kalender</h2><div class="card" id="calcard">${calendarHtml()}</div>${yearLinkHtml()}</section>`;
 
   // Abzeichen
   const got = BADGES.filter(x => S.badges && S.badges[x.id]).length;
-  h += `<section><h2 class="sec">Abzeichen <span class="tnum" style="letter-spacing:0">${got} / ${BADGES.length}</span></h2><div class="card">${nextBadgeHtml()}<div class="badges">${BADGES.map(x => badgeEl(x)).join("")}</div></div></section>`;
+  h += `<section id="sec-badges"><h2 class="sec">Abzeichen <span class="tnum" style="letter-spacing:0">${got} / ${BADGES.length}</span></h2><div class="card">${nextBadgeHtml()}<div class="badges">${BADGES.map(x => badgeEl(x)).join("")}</div></div></section>`;
 
   // Verlauf
   const recent = S.history.slice(-8).reverse();
@@ -1080,9 +1165,11 @@ function renderHome(){
     return `<button class="hrow" data-act="hist" data-id="${e.id}"><span class="dot ${kc(w)}"></span><span><b>${w.name}</b><small>${dShort(e.start)} · ${m}</small></span><span class="muted">›</span></button>`;
   }).join("") : `<p class="empty">Hier erscheinen deine Trainings, sobald du das erste beendet hast.</p>`}</div></section>`;
 
+  h += footerHtml();
   $("#app").innerHTML = h;
   nfMount();
   heroPhotos();
+  revealOnce();
 }
 
 /* ================= Training ================= */
@@ -2702,8 +2789,8 @@ let HERO_ROT = null;
 function heroPhotos(){
   clearInterval(HERO_ROT);
   const hero = document.querySelector("#app section.hero"); if(!hero) return;
-  const go = ps => { if(ps && ps.length && hero.isConnected && !hero.querySelector(".hph")) mountHeroPhotos(hero, ps); };
-  if(PHOTOS) go(PHOTOS); else photoUrls().then(go).catch(() => {});
+  const go = ps => { if(!ps || !ps.length) ps = CAMPUS_PHOTOS; if(hero.isConnected && !hero.querySelector(".hph")) mountHeroPhotos(hero, ps); };
+  if(PHOTOS) go(PHOTOS); else photoUrls().then(go).catch(() => go(null));
 }
 function mountHeroPhotos(hero, ps){
   const now = new Date(), doy = Math.floor((now - new Date(now.getFullYear(),0,0))/864e5);
@@ -2713,13 +2800,17 @@ function mountHeroPhotos(hero, ps){
   box.innerHTML = pick.map((u,i) => `<img src="${u}" alt="" class="${i===0?"on":""}" style="animation-name:kb${i%3}">`).join("") + `<div class="hblur"></div><div class="hov"></div>`;
   hero.prepend(box); hero.classList.add("photo");
   if(n>1){ const dots = document.createElement("div"); dots.className = "hdots"; dots.innerHTML = pick.map((_,i) => `<i class="${i===0?"on":""}"></i>`).join(""); hero.querySelector("h2").before(dots); }
+  HERO_STEP = null;
   if(n>1){
     let k = 0;
-    HERO_ROT = setInterval(() => {
-      if(!box.isConnected){ clearInterval(HERO_ROT); return; }
+    const show = j => {
       const im = box.querySelectorAll("img"), ds = hero.querySelectorAll(".hdots i");
-      im[k].classList.remove("on"); ds[k].classList.remove("on"); k = (k+1) % n; im[k].classList.add("on"); ds[k].classList.add("on");
-    }, 10000);
+      im[k].classList.remove("on"); ds[k].classList.remove("on"); k = ((j % n) + n) % n; im[k].classList.add("on"); ds[k].classList.add("on");
+    };
+    const tick = () => { if(!box.isConnected){ clearInterval(HERO_ROT); return; } show(k+1); };
+    HERO_ROT = setInterval(tick, 10000);
+    HERO_STEP = d => { show(k+d); clearInterval(HERO_ROT); HERO_ROT = setInterval(tick, 10000); };
+    hero.insertAdjacentHTML("beforeend", `<div class="harr"><button data-act="herostep" data-d="-1" aria-label="Vorheriges Foto">‹</button><button data-act="herostep" data-d="1" aria-label="Nächstes Foto">›</button></div>`);
   }
 }
 
@@ -3429,6 +3520,11 @@ document.addEventListener("click", async ev => {
         <button class="secondary danger" data-act="delok" data-id="${b.dataset.id}">Löschen</button><button class="secondary" data-act="closesheet">Abbrechen</button>`); break;
     case "delok": S.history = S.history.filter(x => x.id!==b.dataset.id); save(); closeSheet(); renderHome(); break;
     case "settings": settingsSheet(); break;
+    case "menu": menuSheet(); break;
+    case "menutheme": closeSheet(); S.settings.theme = isDark() ? "light" : "dark"; applyTheme(); save(); renderHome(); break;
+    case "goto": { closeSheet(); const el = document.getElementById(b.dataset.id); if(el) el.scrollIntoView({behavior:smoothOk() ? "smooth" : "auto", block:"start"}); break; }
+    case "herostep": if(HERO_STEP) HERO_STEP(+b.dataset.d); break;
+    case "totop": window.scrollTo({top:0, behavior:smoothOk() ? "smooth" : "auto"}); break;
     case "swap": swapSheet(b.dataset.base); break;
     case "move": moveEx(b.dataset.base, +b.dataset.d); break;
     case "doswap": doSwap(b.dataset.base, b.dataset.id); break;
