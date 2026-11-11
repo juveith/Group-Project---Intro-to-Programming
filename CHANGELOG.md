@@ -12,6 +12,7 @@ Alle Versionen der App, die neueste oben.
 - „Wochenrückblick“ als Rahmen-Button, „Nach oben“ am rechten Rand (Tablet/Desktop)
 - Abschnitte blenden beim ersten Öffnen sanft ein (nicht bei „Bewegung reduzieren“)
 - Bilder liegen in `app/img/` – aktuell Platzhalter, siehe README
+- Wortmarke: „Fit“ jetzt dünn, das schwebende O in Nova-Blau (im Header und im Footer)
 
 ## v2.1 – Neuer NOVAFit-Header
 
