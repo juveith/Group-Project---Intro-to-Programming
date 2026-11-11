@@ -677,6 +677,25 @@ h2.sec::after{content:"";display:block;width:36px;height:6px;margin-top:9px;back
 .mb em{color:#000}
 .runwin{background:var(--run)}
 .planhd{background:#005BAA;box-shadow:none}
+/* ===== NOVAFit-Header: weiß, schwarze Wortmarke, an die Scrollposition gekoppelt ===== */
+:root{--nf-hmax:104px;--nf-hmin:56px;--nf-lmax:34;--nf-lmin:21;--nf-pad:16px}
+@media (min-width:600px){:root{--nf-hmax:124px;--nf-hmin:64px;--nf-lmax:38;--nf-lmin:24;--nf-pad:28px}}
+@media (min-width:1024px){:root{--nf-hmax:144px;--nf-hmin:68px;--nf-lmax:42;--nf-lmin:26;--nf-pad:40px}}
+@media (max-height:520px) and (orientation:landscape){:root{--nf-hmax:76px;--nf-hmin:52px;--nf-lmax:26;--nf-lmin:20}}
+@media (prefers-reduced-motion: reduce){:root:root{--nf-hmax:var(--nf-hmin)}}
+.nf{position:sticky;z-index:8;flex-shrink:0;top:calc(var(--nf-hmin) - var(--nf-hmax));height:calc(env(safe-area-inset-top) + var(--nf-hmax));
+  margin:calc(-14px - env(safe-area-inset-top)) calc(-16px - env(safe-area-inset-right)) 0 calc(-16px - env(safe-area-inset-left));
+  background:#fff;color:#000;box-shadow:0 0 0 100vmax #fff,0 1px 0 100vmax #e6e4e8;clip-path:inset(0 -100vmax -1px)}
+.nf-in{position:absolute;top:0;bottom:0;left:0;right:0;max-width:1180px;margin:0 auto;
+  padding:0 calc(env(safe-area-inset-right) + var(--nf-pad)) 0 calc(env(safe-area-inset-left) + var(--nf-pad))}
+.nf-mark{position:absolute;left:0;top:0;width:0;height:0;color:#000}
+.nf-mark > *{position:absolute;left:0;top:0;display:block;transform-origin:0 0;fill:currentColor}
+.nf-n{width:80px;height:100px}.nf-rest{width:322px;height:100px}.nf-o{width:80px;height:80px}
+.nf-bar{width:100px;height:22px;background:currentColor}
+.nf:not(.nf-on) .nf-mark{visibility:hidden}
+.nf-btns{position:absolute;right:calc(env(safe-area-inset-right) + var(--nf-pad));top:calc(env(safe-area-inset-top) + var(--nf-hmax) / 2 - 21px)}
+.nf .iconbtn{background:#fff;border-color:#dedbe2;color:#111}
+.nf .iconbtn:hover{border-color:#111}
 </style>
 </head>
 <body>
@@ -938,12 +957,60 @@ function ring(done, goal){
   <text x="38" y="44" text-anchor="middle" font-family="Open Sans, sans-serif" font-weight="800" font-size="19" fill="var(--ink)">${done}/${goal}</text></svg>`;
 }
 
+/* ================= NOVAFit-Header =================
+   Der Header ist immer gleich hoch (kein Verrutschen) und klebt mit negativem top:
+   beim Scrollen verschwindet sein oberer Teil, sichtbar bleibt ein Band von hmax bis hmin.
+   Wortmarke (N – Balken mit O – VAFit) und Buttons werden pro Frame in diesem Band ausgerichtet. */
+const NF_MARK = `<div class="nf-mark" role="img" aria-label="NOVAFit">
+  <svg class="nf-n" viewBox="0 0 80 100" aria-hidden="true"><path d="M0 100V0H22L58 60V0H80V100H58L22 40V100Z"/></svg>
+  <i class="nf-bar" aria-hidden="true"></i>
+  <svg class="nf-o" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="30.5" fill="none" stroke="currentColor" stroke-width="19"/></svg>
+  <svg class="nf-rest" viewBox="0 0 322 100" aria-hidden="true"><path d="M0 0H23L43 66L63 0H86L54 100H32Z"/><path d="M100 0H122L154 100H131L111 34L91 100H68Z"/><path d="M168 0H230V20H190V41H224V61H190V100H168Z"/><path d="M244 32H265V100H244Z"/><circle cx="254.5" cy="13" r="11"/><path d="M283 8H304V32H320V50H304V100H283V50H277V32H283Z"/></svg>
+</div>`;
+const NF = {m:null, raf:0};
+const NF_U = 80 + 2*12 + 322;            // Breite ohne Balken, in Einheiten (Versalhöhe = 100)
+function nfMount(){
+  const h = document.getElementById("nfhead"); if(!h){ NF.m = null; return; }
+  const cs = getComputedStyle(document.documentElement), v = n => parseFloat(cs.getPropertyValue(n)) || 0;
+  const hmax = v("--nf-hmax"), hmin = v("--nf-hmin");
+  const inn = h.querySelector(".nf-in"), ics = getComputedStyle(inn), btns = h.querySelector(".nf-btns");
+  const pl = parseFloat(ics.paddingLeft), pr = parseFloat(ics.paddingRight);
+  const avail = inn.clientWidth - pl - pr - btns.offsetWidth - 24;
+  const fit = avail / (NF_U + 80) * 100;  // Schrift notfalls kleiner, damit nichts kollidiert
+  const still = hmax <= hmin;               // reduzierte Bewegung: gleich kompakt, keine Animation
+  const lmin = Math.min(v("--nf-lmin"), fit), lmax = still ? lmin : Math.min(v("--nf-lmax"), fit);
+  const kx = lmax/100, kn = lmin/100;
+  NF.m = { h, x0:pl, hmax, hmin, D:Math.max(0, hmax-hmin), safe:h.offsetHeight - hmax, lmax, lmin,
+    barMax: Math.max(80*kx, Math.min(avail - NF_U*kx, 9*lmax)), barMin: 80*kn,
+    n:h.querySelector(".nf-n"), bar:h.querySelector(".nf-bar"), o:h.querySelector(".nf-o"), rest:h.querySelector(".nf-rest"), btns };
+  nfUpdate();
+  h.classList.add("nf-on");
+}
+function nfUpdate(){
+  const m = NF.m; if(!m || !m.h.isConnected) return;
+  const lerp = (a, b) => a + (b - a) * p;
+  const t = Math.min(Math.max(window.scrollY || 0, 0), m.D), p = m.D > 0 ? t / m.D : 1;
+  const k = lerp(m.lmax, m.lmin) / 100, bw = lerp(m.barMax, m.barMin), ob = lerp(82, 28);
+  const vis = (ob + 80) * k;                      // sichtbare Höhe: Oberkante O bis Grundlinie
+  const dpr = window.devicePixelRatio || 1;
+  const B = Math.round((m.safe + t + (m.hmax - t + vis) / 2) * dpr) / dpr;   // Grundlinie im sichtbaren Band
+  const xb = m.x0 + 92*k, xr = xb + bw + 12*k;
+  m.n.style.transform = `translate(${m.x0}px,${B - 100*k}px) scale(${k})`;
+  m.bar.style.transform = `translate(${xb}px,${B - 22*k}px) scale(${bw/100},${k})`;
+  m.o.style.transform = `translate(${xb + bw/2 - 40*k}px,${B - (ob + 80)*k}px) scale(${k})`;
+  m.rest.style.transform = `translate(${xr}px,${B - 100*k}px) scale(${k})`;
+  m.btns.style.transform = `translateY(${t/2}px)`;
+}
+window.addEventListener("scroll", () => { if(NF.m && !NF.raf) NF.raf = requestAnimationFrame(() => { NF.raf = 0; nfUpdate(); }); }, {passive:true});
+window.addEventListener("resize", () => { if(NF.m) nfMount(); });
+try{ matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", () => { if(NF.m) nfMount(); }); }catch(e){}
+
 function renderHome(){
   wxLoad();
   const st = stats();
-  let h = `<header class="top"><div class="brand"><span class="nfm" aria-hidden="true">N</span><span class="nfw"><b>NOVA</b><i>Fit</i></span></div>
-    <div class="topbtns"><button class="iconbtn" data-act="themetoggle" aria-label="${isDark()?"Hellen Modus einschalten":"Dunkelmodus einschalten"}">${isDark()?sun:moon}</button>
-    <button class="iconbtn" data-act="settings" aria-label="Einstellungen">${gear}</button></div></header>`;
+  let h = `<header class="nf" id="nfhead"><div class="nf-in">${NF_MARK}
+    <div class="topbtns nf-btns"><button class="iconbtn" data-act="themetoggle" aria-label="${isDark()?"Hellen Modus einschalten":"Dunkelmodus einschalten"}">${isDark()?sun:moon}</button>
+    <button class="iconbtn" data-act="settings" aria-label="Einstellungen">${gear}</button></div></div></header>`;
   h += heroHtml(st);
 
   if(push==="install" && !S.settings.hideInstall){
@@ -1014,6 +1081,7 @@ function renderHome(){
   }).join("") : `<p class="empty">Hier erscheinen deine Trainings, sobald du das erste beendet hast.</p>`}</div></section>`;
 
   $("#app").innerHTML = h;
+  nfMount();
   heroPhotos();
 }
 
