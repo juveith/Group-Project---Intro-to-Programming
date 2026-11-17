@@ -11,10 +11,10 @@ self.addEventListener("push", e => {
   }catch(_){}
 });
 
-const CACHE = "novafit-v7";
+const CACHE = "novafit-v8";
 // Text recognition for run screenshots (a few MB, fixed version): own cache, so app updates don't download it again
 const OCR_CACHE = "novafit-ocr-v1";
-const FILES = ["./", "./index.html", "./plan.js", "./run.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./OneSignalSDKWorker.js", "./img/campus-1.svg", "./img/campus-2.svg", "./img/gym.svg", "./img/run.svg", "./img/yoga.svg"];
+const FILES = ["./", "./index.html", "./plan.js", "./run.js", "./muscles.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./OneSignalSDKWorker.js", "./img/campus-1.svg", "./img/campus-2.svg", "./img/gym.svg", "./img/run.svg", "./img/yoga.svg"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

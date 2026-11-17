@@ -2,6 +2,14 @@
 
 Alle Versionen der App, die neueste oben.
 
+## v2.8 – Muscle slide follows your training
+
+- The muscle slide in the weekly and monthly reviews now names the muscle that got the most volume, e.g. “Back on fire 🔥”, “Quads on fire 🔥” or “Glutes on fire 🔥”, instead of always talking about the glutes
+- Two muscles that are almost even share the headline (“Quads & calves on fire 🔥”)
+- The tip at the bottom points to whatever was left out: a lower body day when the legs got little, an upper body day after a leg-heavy gym week; runners without strength sessions get no tip
+- The monthly share card shows the top muscle instead of only the glutes
+- New file `app/muscles.js` with the muscle logic and 9 new tests (74 in total)
+
 ## v2.7 – Strava: runs from your watch come in by themselves
 
 - New “Connect Strava” in the run menu and in Settings. Runs from Garmin, Polar, Coros, Suunto and Apple Watch that reach Strava are added automatically when NOVAFit is opened (can be turned off)

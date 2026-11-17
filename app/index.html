@@ -832,6 +832,7 @@ section[id]{scroll-margin-top:calc(var(--nf-hmin) + 14px)}
 
 <script src="plan.js"></script>
 <script src="run.js"></script>
+<script src="muscles.js"></script>
 <script>
 /* ================= Plan ================= */
 const W = {
@@ -3523,34 +3524,8 @@ function nrcHelp(){
 }
 
 /* ================= Muskeln: welche Muskeln wurden wie stark trainiert ================= */
-const MUSC = {
-  squat:{quads:1,glutes:.7,adduct:.3,lowback:.2}, smithsq:{quads:1,glutes:.6,adduct:.3}, gobletsq:{quads:1,glutes:.6,adduct:.3}, legpress:{quads:1,glutes:.5},
-  legcurl:{hams:1}, seatcurl:{hams:1}, calf:{calves:1},
-  hip:{glutes:1,hams:.3}, smithhip:{glutes:1,hams:.3}, glutebridge:{glutes:1,hams:.2}, dbhip:{glutes:1,hams:.3},
-  bulgarian:{glutes:.8,quads:.6,adduct:.2}, split:{glutes:.7,quads:.7,adduct:.2}, revlunge:{glutes:.8,quads:.6},
-  rdl:{hams:1,glutes:.7,lowback:.4}, dbrdl:{hams:1,glutes:.7,lowback:.4}, hyper:{glutes:.9,hams:.5,lowback:.4},
-  kick:{glutes:1}, kickm:{glutes:1}, abd:{glutes:.9}, add:{adduct:1}, cableadd:{adduct:1},
-  lat:{back:1,biceps:.4}, latclose:{back:1,biceps:.4}, latone:{back:1,biceps:.4},
-  incl:{chest:1,shoulders:.4,triceps:.4}, inclm:{chest:1,shoulders:.4,triceps:.4}, flatdb:{chest:1,triceps:.4,shoulders:.3},
-  lra:{shoulders:1}, lracable:{shoulders:1}, lram:{shoulders:1},
-  bic:{biceps:1}, hammer:{biceps:1}, cablecurl:{biceps:1}, tri:{triceps:1}, pushdown:{triceps:1}, ohtri:{triceps:1}
-};
-const MUSC_N = {glutes:"Glutes", hams:"Hamstrings", quads:"Quads", adduct:"Inner thighs", calves:"Calves", back:"Back", lowback:"Lower back", chest:"Chest", shoulders:"Shoulders", biceps:"Biceps", triceps:"Triceps", core:"Core"};
-const UPPER = ["back","chest","shoulders","biceps","triceps"];
-function muscleLoad(H){
-  const L = {};
-  const add = (m, v) => L[m] = (L[m]||0) + v;
-  H.forEach(e => {
-    Object.keys(e.sets||{}).forEach(id => { const map = MUSC[id]; if(!map) return; const n = (e.sets[id]||[]).filter(s => num(s.r)>0).length; Object.entries(map).forEach(([m,w]) => add(m, n*w)); });
-    const km = kmOf(e); if(km>0){ const k = Math.min(2, km/5); add("quads", 2*k); add("calves", 2*k); add("hams", 1.2*k); add("glutes", 1*k); add("core", .4*k); }
-    if(e.yoga){ const k = Math.min(1.5, Math.max(.5, num(e.yoga.min)/30)); add("core", 2*k); add("glutes", 1*k); add("hams", 1*k); add("back", .5*k); add("shoulders", .5*k); }
-  });
-  const tot = Object.values(L).reduce((a,b) => a+b, 0), max = Math.max(0, ...Object.values(L));
-  const rank = Object.entries(L).filter(x => x[1]>0).sort((a,b) => b[1]-a[1]).map(([k,v]) => ({k, n:MUSC_N[k], pct:tot ? Math.round(v/tot*100) : 0, rel:max ? v/max : 0}));
-  const I = {}; Object.entries(L).forEach(([k,v]) => I[k] = max ? v/max : 0);
-  I.traps = (I.back||0)*.5;
-  return {I, rank, tot, glutePct:tot ? Math.round((L.glutes||0)/tot*100) : 0};
-}
+/* Welche Muskeln wie viel abbekommen und die Überschrift dazu stecken in muscles.js (NFMuscles), getestet in tests/muscles.test.js */
+const muscleLoad = H => NFMuscles.load(H);
 function bodySvg(view, I){
   const base = "rgba(255,255,255,.16)", sk = "rgba(255,255,255,.08)";
   const c = k => { const v = I[k]||0; return v<=0.02 ? base : `rgba(255,255,255,${(.24+.76*v).toFixed(2)})`; };
@@ -3580,15 +3555,11 @@ function bodySvg(view, I){
 }
 function muscleSlide(H, when){
   const M = muscleLoad(H); if(!M.rank.length) return null;
-  const top = M.rank[0].k, dl = ms => ` style="animation-delay:${ms}ms"`;
-  let big, p;
-  if(top==="glutes"){ big = "Glutes on fire 🔥"; p = `${M.glutePct} % of your training ${when==="week"?"this week ":""}went to your glutes 🍑`; }
-  else if(UPPER.includes(top)){ big = "Upper body power 💪"; p = `Worked the most: ${M.rank[0].n}.`; }
-  else if(top==="core"){ big = "Strong core 🧘‍♀️"; p = "Yoga really challenged your core."; }
-  else { big = "Strong legs 🏃‍♀️"; p = `Worked the most: ${M.rank[0].n}.`; }
-  const hint = top!=="glutes" && M.glutePct<20 ? `<p class="sy-p mhint fadeup"${dl(700)}>Your glutes got a bit less attention ${when==="week"?"this week":"this month"}. Lower body day next time? 🦵</p>` : "";
+  const dl = ms => ` style="animation-delay:${ms}ms"`;
+  const hd = NFMuscles.headline(M, when);
+  const hint = hd.hint ? `<p class="sy-p mhint fadeup"${dl(700)}>${hd.hint}</p>` : "";
   const rank = M.rank.slice(0,3).map((r,i) => `<div class="mrk fadeup"${dl(500+i*120)}><b>${i+1}</b><span>${r.n}</span><span class="tnum">${r.pct} %</span><i class="mtr"><i style="width:${Math.round(r.rel*100)}%"></i></i></div>`).join("");
-  return {c:"s5", nophoto:true, h:`<p class="sy-eb">Your muscles ${when==="week"?"this week":"in "+when}</p><h2 class="sy-big pop">${big}</h2><p class="sy-p">${p}</p><div class="sy-panel mfig fadeup"${dl(300)}><div class="mfigs"><div>${bodySvg("front", M.I)}<small>front</small></div><div>${bodySvg("back", M.I)}<small>back</small></div></div></div><div class="mrank">${rank}</div>${hint}`};
+  return {c:"s5", nophoto:true, h:`<p class="sy-eb">Your muscles ${when==="week"?"this week":"in "+when}</p><h2 class="sy-big pop">${hd.title}</h2><p class="sy-p">${hd.text}</p><div class="sy-panel mfig fadeup"${dl(300)}><div class="mfigs"><div>${bodySvg("front", M.I)}<small>front</small></div><div>${bodySvg("back", M.I)}<small>back</small></div></div></div><div class="mrank">${rank}</div>${hint}`};
 }
 
 /* ================= Monatsrückblick (Story) ================= */
@@ -3688,7 +3659,7 @@ function monthShareSpec(r){
   const items = [];
   if(r.curve) items.push(`💪 ${r.curve.n} +${r.curve.pct} %`);
   if(r.alster) items.push(`🌊 ${r.alster}× around the Alster`);
-  const M = muscleLoad(r.H); if(M.rank[0] && M.rank[0].k==="glutes") items.push(`🍑 ${M.glutePct} % for the glutes`);
+  const M = muscleLoad(r.H), mt = M.rank[0]; if(mt) items.push(`${NFMuscles.EMOJI[mt.k]} ${mt.pct} % for the ${mt.n.toLowerCase()}`);
   const st2 = [["Sessions", String(r.n)]]; if(r.km) st2.push(["Run", fmt(r.km)+" km"]); if(r.vol) st2.push(["Moved", tons(r.vol)]);
   return {key:"m"+r.y+"-"+r.m, col:THEME_COL[""], eyebrow:`${MONTHS[r.m]} ${r.y}`, title:`My ${MONTHS[r.m]}`, sub:"Your training month ✨", stats:st2, items:items.slice(0,3), kcal:r.kcal, foot:`${r.days} training days`, text:`My training month: ${MONTHS[r.m]} ✨`};
 }
