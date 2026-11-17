@@ -2,6 +2,14 @@
 
 Alle Versionen der App, die neueste oben.
 
+## v2.9 – Default photo pack for home screen and reviews
+
+- New default photo pack in `app/img/pack/`: campus and gym photos for the photo box on the home screen and as backgrounds in the weekly and monthly reviews
+- Own photos from Settings still come first; the pack is used when there are none, missing files are skipped
+- Each photo has a crop point, so people and buildings stay in view on tall phone screens
+- Review slides with charts (calendar, curves, muscle map, rhythm) no longer get a photo behind them, so they stay readable
+- The photo files themselves are not in the repository yet (see `app/img/pack/README.txt`)
+
 ## v2.8 – Muscle slide follows your training
 
 - The muscle slide in the weekly and monthly reviews now names the muscle that got the most volume, e.g. “Back on fire 🔥”, “Quads on fire 🔥” or “Glutes on fire 🔥”, instead of always talking about the glutes

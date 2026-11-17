@@ -1150,6 +1150,25 @@ try{ matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", (
 /* Campus-Fotos für den großen Kasten oben. Eigene Fotos (Einstellungen → Fotos) haben Vorrang.
    Zum Austauschen: Bilder nach app/img legen und hier eintragen. */
 const CAMPUS_PHOTOS = [{url:"img/campus-1.svg"}, {url:"img/campus-2.svg"}];
+/* Standard-Fotopaket für Startseite und Rückblicke (img/pack/, siehe img/pack/README.txt).
+   Gilt, solange keine eigenen Fotos in den Einstellungen sind. Fehlende Dateien werden übersprungen;
+   fehlt das ganze Paket, zeigt die Startseite CAMPUS_PHOTOS und die Rückblicke bleiben ohne Foto.
+   pos = Bildausschnitt (wie CSS object-position), damit im Hochformat das Wichtige sichtbar bleibt. */
+const PHOTO_PACK = [
+  {url:"img/pack/campus-plaza.jpg", pos:"62% 50%"},
+  {url:"img/pack/campus-terrace.jpg", pos:"86% 55%"},
+  {url:"img/pack/campus-glass-hall.jpg", pos:"62% 55%"},
+  {url:"img/pack/gym-cardio.jpg", pos:"40% 60%"},
+  {url:"img/pack/gym-weights.jpg", pos:"55% 60%"}
+];
+let PACK = null;
+function packPhotos(){
+  return PACK || (PACK = Promise.all(PHOTO_PACK.map(p => new Promise(ok => {
+    const im = new Image(); im.onload = () => ok(p); im.onerror = () => ok(null); im.src = p.url;
+  }))).then(a => a.filter(Boolean)));
+}
+// Eigene Fotos haben Vorrang, sonst das Paket
+function defaultPhotos(){ return photoUrls().catch(() => []).then(ps => ps.length ? ps : packPhotos()); }
 let HERO_STEP = null, REVEALED = false;
 const smoothOk = () => !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
 const HB_ICON = '<svg viewBox="0 0 30 24" aria-hidden="true"><rect y="1" width="30" height="4.5" fill="currentColor"/><rect y="9.75" width="30" height="4.5" fill="currentColor"/><rect y="18.5" width="30" height="4.5" fill="currentColor"/></svg>';
@@ -3081,14 +3100,14 @@ function heroPhotos(){
   clearInterval(HERO_ROT);
   const hero = document.querySelector("#app section.hero"); if(!hero) return;
   const go = ps => { if(!ps || !ps.length) ps = CAMPUS_PHOTOS; if(hero.isConnected && !hero.querySelector(".hph")) mountHeroPhotos(hero, ps); };
-  if(PHOTOS) go(PHOTOS); else photoUrls().then(go).catch(() => go(null));
+  defaultPhotos().then(go).catch(() => go(null));
 }
 function mountHeroPhotos(hero, ps){
   const now = new Date(), doy = Math.floor((now - new Date(now.getFullYear(),0,0))/864e5);
   const n = Math.min(ps.length, 5), start = doy % ps.length;
-  const pick = Array.from({length:n}, (_,i) => ps[(start+i) % ps.length].url);
+  const pick = Array.from({length:n}, (_,i) => ps[(start+i) % ps.length]);
   const box = document.createElement("div"); box.className = "hph"; box.setAttribute("aria-hidden", "true");
-  box.innerHTML = pick.map((u,i) => `<img src="${u}" alt="" class="${i===0?"on":""}" style="animation-name:kb${i%3}">`).join("") + `<div class="hblur"></div><div class="hov"></div>`;
+  box.innerHTML = pick.map((p,i) => `<img src="${p.url}" alt="" class="${i===0?"on":""}" style="animation-name:kb${i%3}${p.pos?`;object-position:${p.pos}`:""}">`).join("") + `<div class="hblur"></div><div class="hov"></div>`;
   hero.prepend(box); hero.classList.add("photo");
   if(n>1){ const dots = document.createElement("div"); dots.className = "hdots"; dots.innerHTML = pick.map((_,i) => `<i class="${i===0?"on":""}"></i>`).join(""); hero.querySelector("h2").before(dots); }
   HERO_STEP = null;
@@ -3462,10 +3481,11 @@ async function addPhotos(files){
   toast(ok ? `${ok} ${ok===1?"photo":"photos"} added ❤️` : "That didn't work.");
 }
 function attachPhotos(st){
-  photoUrls().then(ps => {
+  defaultPhotos().then(ps => {
     if(!ps.length || STORY!==st) return;
     const sh = ps.slice().sort(() => Math.random()-.5);
-    st.photos = st.slides.map((_,i) => sh[i % sh.length].url);
+    let j = 0;   // Folien mit Diagrammen (nophoto) bleiben ohne Foto, damit sie lesbar sind
+    st.photos = st.slides.map(sl => sl.nophoto ? null : sh[j++ % sh.length]);
     drawStory(true);
   }).catch(() => {});
 }
@@ -3687,7 +3707,7 @@ function drawStory(noFx){
   const sl = STORY.slides[STORY.i];
   const ph = STORY.photos && STORY.photos[STORY.i];
   el.className = "story " + sl.c + (ph ? " has-photo" : "");
-  el.innerHTML = (ph ? `<div class="sy-bg kb${STORY.i%3}" style="background-image:url('${ph}')"></div><div class="sy-tint"></div><div class="sy-shade"></div>` : "") + `<div class="sy-prog">${STORY.slides.map((_,i) => `<i class="${i<STORY.i?"done":i===STORY.i?"on":""}"></i>`).join("")}</div><button class="sy-snd" data-act="storymute" aria-label="${S.settings.storyMute?"Music on":"Music off"}">${S.settings.storyMute?"🔇":"🔊"}</button><button class="sy-x" data-act="storyclose" aria-label="Close">✕</button><div class="sy-in">${sl.h}</div>`;
+  el.innerHTML = (ph ? `<div class="sy-bg kb${STORY.i%3}" style="background-image:url('${ph.url}')${ph.pos?`;background-position:${ph.pos}`:""}"></div><div class="sy-tint"></div><div class="sy-shade"></div>` : "") + `<div class="sy-prog">${STORY.slides.map((_,i) => `<i class="${i<STORY.i?"done":i===STORY.i?"on":""}"></i>`).join("")}</div><button class="sy-snd" data-act="storymute" aria-label="${S.settings.storyMute?"Music on":"Music off"}">${S.settings.storyMute?"🔇":"🔊"}</button><button class="sy-x" data-act="storyclose" aria-label="Close">✕</button><div class="sy-in">${sl.h}</div>`;
   if(sl.end && !noFx) confetti(true);
   musicLevel(STORY.i, STORY.slides.length);
 }
