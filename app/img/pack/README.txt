@@ -14,9 +14,9 @@ Expected files (JPG, about 1600 px wide, landscape is fine):
   gym-weights.jpg         gym: dumbbells and benches
 
 The list and the crop for portrait screens (pos) are in app/index.html under
-PHOTO_PACK. Missing files are skipped. Without any file the home screen shows
-the placeholder graphics and the reviews have no photos.
+PHOTO_PACK. Missing files are skipped. Without any file the home screen and
+the reviews show the NOVAFit illustrations from app/img/ instead.
 
-Only add photos you took yourselves or have written permission to use.
-Photos from the Nova SBE website are protected by copyright, and this
-repository is public.
+Credits: campus and gym photos © Nova SBE. Used only for the
+Introduction to Programming course project at Nova SBE, not for any
+other purpose. Replace them before using the app outside the course.

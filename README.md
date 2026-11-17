@@ -97,7 +97,7 @@ or `npm test`. The tests cover valid and rejected sign-up input (empty fields, i
 
 To change the training card pictures, update the file names in `.simg-gym`, `.simg-run`, `.simg-yoga` in `app/index.html`. When you add files the app loads at start, also add them to `FILES` in `app/OneSignalSDKWorker.js` and increase `CACHE` by one so installed apps pick them up (photo pack files are cached automatically when they are first shown).
 
-Only use your own photos or photos with a suitable licence – pictures from the Nova website are protected by copyright.
+The photos in `app/img/pack/` are © Nova SBE and used only for this course project. For anything beyond the course, replace them with your own photos or photos with a suitable licence.
 
 ## Tracking changes
 

@@ -8,7 +8,7 @@ Alle Versionen der App, die neueste oben.
 - Own photos from Settings still come first; the pack is used when there are none, missing files are skipped
 - Each photo has a crop point, so people and buildings stay in view on tall phone screens
 - Review slides with charts (calendar, curves, muscle map, rhythm) no longer get a photo behind them, so they stay readable
-- The photo files themselves are not in the repository yet (see `app/img/pack/README.txt`)
+- Five photos included: campus plaza, roof terrace, glass hall, gym cardio area and weights area (© Nova SBE, used for this course project only, see `app/img/pack/README.txt`)
 
 ## v2.8 – Muscle slide follows your training
 
