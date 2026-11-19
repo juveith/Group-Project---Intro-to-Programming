@@ -544,6 +544,18 @@ a.dl{display:grid;place-items:center;text-decoration:none;color:var(--ink)}
 .nearkm button{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 4px;font:600 13.5px var(--body);cursor:pointer}
 .nearkm button[aria-pressed="true"]{border-color:var(--run);background:var(--run-soft);color:var(--run)}
 .loopc .txtbtn{align-self:flex-start;padding:0}
+.flexsteps{font-size:14.5px}
+.flexopts{display:flex;flex-direction:column;gap:6px}
+.flexopt{position:relative;display:flex;align-items:center;height:46px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 15px var(--body);padding:0 14px;cursor:pointer;overflow:hidden;text-align:left}
+.flexopt i{position:absolute;left:0;top:0;bottom:0;background:var(--yoga-soft)}.flexopt span{position:relative}
+.flexopt:hover,.flexopt:focus-visible{border-color:var(--yoga)}
+.flexnow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.flexnow small{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.flexnow b{font:800 24px var(--num);color:var(--yoga)}
+.flexchart{width:100%;height:auto;margin:6px 0}.flexchart path{fill:none;stroke:var(--yoga);stroke-width:3;stroke-linejoin:round}
+.flexchart circle{fill:var(--surface);stroke:var(--yoga);stroke-width:3}.flexchart .toesline{stroke:var(--line);stroke-dasharray:4 4}
+.flexchart text{font:600 11px var(--body);fill:var(--muted)}
+.flexgo{margin-top:10px;width:100%}
+.ynudge .primary{margin-top:10px}
 .hsrcs{display:flex;flex-direction:column;gap:10px}
 .hsrc{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:calc(var(--rs) * 16px);padding:12px 14px;background:var(--surface)}
 .hsrc b{display:block;font-size:15px}.hsrc small{display:block;color:var(--muted);font-size:12.5px;margin-bottom:8px}
@@ -854,6 +866,10 @@ button.ctr{cursor:pointer}
 .pblock > .card{border:0;color:#fff;padding:20px 18px}
 .pblock.c-run > .card{background:#005BAA}
 .pblock.c-kraft > .card{background:#4b1a63}
+.pblock.c-yoga > .card{background:#b83c00}
+.pblock .flexchart path{stroke:#fff}.pblock .flexchart circle{fill:#b83c00;stroke:#fff}
+.pblock .flexchart .toesline{stroke:rgba(255,255,255,.55)}.pblock .flexchart text{fill:#fff}
+.pblock .flexgo{background:transparent!important;border:1.5px solid #fff!important}
 .pblock > .card *{color:#fff!important;border-color:rgba(255,255,255,.28)!important}
 .pblock .tile{background:transparent!important;padding:4px 2px;text-align:left}
 .pblock .tile b{font-size:26px}
@@ -1537,6 +1553,10 @@ function todayTabHtml(st){
     lr ? [fmt(num(lr.run.km)), `km on ${WDAY[new Date(lr.start).getDay()]}`] : [fmt(st.kmMonth), "km this month"],
     [st.streak, st.streak===1 ? "week in a row" : "weeks in a row"]
   ]);
+  // „Sleep better“: abends ein Hinweis auf Wind down, solange heute noch kein Yoga war
+  const hNow = new Date().getHours(), yToday = S.history.some(e => e.yoga && new Date(e.start).toDateString()===new Date().toDateString());
+  if(yGoals().includes("sleep") && hNow >= 20 && !yToday && !S.active)
+    h += `<section class="card nudge ynudge"><b>Wind down tonight</b><p class="small muted" style="margin:0">For your goal “Sleep better”: quiet stretches on the floor before bed, 10 to 20 minutes.</p><button class="primary yoga" data-act="yogaflow">Start Wind down</button></section>`;
   const up = upcoming(2);
   const tiles = up.length ? up.map(se => `<button class="ntile" data-act="planday" data-d="${se.day}"><img src="${KIND_PHOTO[se.kind]||KIND_PHOTO.s}" alt="" loading="lazy"><span class="nmeta"><span>${KIND_LBL[se.kind]||""}</span><span>${new Date(se.at).toLocaleDateString("en-GB",{weekday:"short", day:"numeric"})}</span></span><b>${esc(se.title)} · ${se.min} min</b></button>`).join("")
     : startKeys().slice(0,2).map(t => `<button class="ntile" data-act="start" data-t="${t}"><img src="${KIND_PHOTO[kindOfW(t)]}" alt="" loading="lazy"><span class="nmeta"><span>${KIND_LBL[kindOfW(t)]}</span><span>${st.lastBy[t] ? "last " + ago(st.lastBy[t]) : "new"}</span></span><b>${esc(W[t].name)}</b></button>`).join("");
@@ -1600,6 +1620,7 @@ function progressTabHtml(st){
   </div>${runGoalsHtml(st)}<p class="small muted" style="margin:0">Total <b class="tnum" style="color:var(--ink)">${fmt(st.km)} km</b>${st.longest?` · longest run ${fmt(st.longest)} km`:""}</p>${st.alsterN?`<p class="alsterc">🔁 You've run your ${esc(LN())} <b class="tnum">${st.alsterN}×</b>.</p>`:""}</div></section>`;
 
   // Kalender
+  h += flexHtml();
   h += `<section id="sec-cal"><h2 class="sec">Calendar</h2><div class="card" id="calcard">${calendarHtml()}</div>${yearLinkHtml()}</section>`;
 
   // Abzeichen
@@ -2421,8 +2442,12 @@ function yogaLabel(y){
 // MET values for calories: calm sessions burn less than a flow
 function yogaMet(y){ const s = y && y.sid && NFYoga.byId(y.sid); return s ? [3, 2.5, 3, 3.5][s.level] : y && y.flow ? 3.5 : 3.0; }
 const ranToday = () => { const d = new Date().toDateString(); return S.history.some(e => e.run && new Date(e.start).toDateString()===d); };
-const ySuggest = () => NFYoga.suggest(Date.now(), ranToday());
-function ySid(){ const a = S.active && S.active.yoga; return (a && a.sid) || S.settings.yogaSid || ySuggest() || "vinyasa"; }
+// Yoga-Ziele aus dem Fragebogen (toes, back, exam, sleep) steuern den Vorschlag mit
+const yGoals = () => ((S.settings.answers && S.settings.answers.goals) || []);
+const ySuggestWhy = () => NFYoga.suggestWhy(Date.now(), ranToday(), undefined, yGoals());
+const ySuggest = () => ySuggestWhy().id;
+// Ein passender Vorschlag ist vorausgewählt; sonst die zuletzt gewählte Einheit
+function ySid(){ const a = S.active && S.active.yoga; return (a && a.sid) || ySuggest() || S.settings.yogaSid || "vinyasa"; }
 function yLen(id){ return id==="vinyasa" ? yogaLen() : NFYoga.lengthFor(id, (S.settings.yogaLens||{})[id]); }
 // The steps of a session at its chosen length (vinyasa: the flows taking turns)
 function ySteps(id){ return id==="vinyasa" ? NFYoga.expandSun(flowSteps(curFlow())) : NFYoga.stepsFor(id, yLen(id)); }
@@ -2458,7 +2483,7 @@ function yogaBlock(){
   const sub = (sid==="vinyasa" ? `Today: ${esc(curFlow().n)} · ` : "") + `${np} poses${sun}`;
   const others = NFYoga.SESSIONS.filter(x => x.id!==sid).map(x => `<button class="yrow" data-act="yogapick" data-id="${x.id}">${poseSvg(yPose(x.id),"thumb")}<span class="ytxt">${x.id===sug?`<span class="ysug">Suggested now</span>`:""}<b>${esc(x.n)}</b><small>${esc(x.desc)}</small>${yMeta(x, x.id==="vinyasa" ? yogaLen() : yLen(x.id))}</span></button>`).join("");
   return `<article class="card yogacard">
-    <div class="exhead"><h3>${esc(s.n)}<small>${sid===sug?"Suggested now · ":""}${esc(s.desc)}</small></h3>
+    <div class="exhead"><h3>${esc(s.n)}<small>${sid===sug?`${esc(ySuggestWhy().why || "Suggested now")} · `:""}${esc(s.desc)}</small></h3>
       ${y.flow && y.sid===sid?`<span class="pill yoga">✓ done</span>`:""}</div>
     ${yMeta(s, FM)}<p class="small muted" style="margin:0">${sub}</p>
     <button class="primary yoga" data-act="yogago">${y.flow && y.sid===sid?"Start again":"Start"}</button>
@@ -3120,10 +3145,12 @@ function facts(){
   let streakMax = 0, cur = 0, prev = null;
   keys.forEach(k => { if(weeks[k].n>=goal){ cur = (prev!==null && k-prev<WEEK*1.5 && weeks[prev].n>=goal) ? cur+1 : 1; streakMax = Math.max(streakMax, cur); } prev = k; });
   return {total:H.length, km, vol, early, hipMax, prs, bestAlster, streakMax, yoga:H.filter(e => e.yoga).length,
+    flexBest:Math.max(0, ...NFYoga.flexList(S.settings.flex).map(c => c.v)),
     goalWeeks:keys.filter(k => weeks[k].n>=goal).length, allround:keys.some(k => { const g = [...weeks[k].types].map(t => (W[t]||{}).group);
       return weeks[k].types.has("lauf") && g.some(x => ["lower","legs","full"].includes(x)) && g.some(x => ["upper","push","pull","full"].includes(x)); })};
 }
 const BADGES = [
+  {id:"toes", l:"✋", t:"Toes touched", d:"You reached your toes in the flexibility check.", ok:f => f.flexBest>=4},
   {id:"first", l:"1", t:"First session", d:"You finished your very first session.", ok:f => f.total>=1},
   {id:"t10", l:"10", t:"10 sessions", d:"Completed 10 sessions.", ok:f => f.total>=10},
   {id:"t25", l:"25", t:"25 sessions", d:"Completed 25 sessions.", ok:f => f.total>=25},
@@ -3155,7 +3182,7 @@ function checkBadges(silent){
 /* ================= Abzeichen-Design B: Sechsecke mit Emoji & Fortschritt ================= */
 const BEMO = {first:"🌱",t10:"⭐",t25:"🌟",t50:"👑",goal1:"🎯",streak4:"🔥",streak8:"☄️",allround:"🌈",km10:"👟",km50:"🛣️",km100:"🏅",al45:"⏱️",al40:"⚡",ht50:"🍑",ht80:"💎",pr5:"🏆",pr20:"🦾",vol10t:"🐘",yoga1:"🧘‍♀️",yoga10:"🪷",early:"🌅"};
 let FCACHE = {k:"", v:null};
-function factsC(){ const l = S.history[S.history.length-1], k = S.history.length+":"+(l?l.end:0)+":"+S.settings.goal; if(FCACHE.k!==k) FCACHE = {k, v:facts()}; return FCACHE.v; }
+function factsC(){ const l = S.history[S.history.length-1], k = S.history.length+":"+(l?l.end:0)+":"+S.settings.goal+":"+(S.settings.flex||[]).length; if(FCACHE.k!==k) FCACHE = {k, v:facts()}; return FCACHE.v; }
 function badgeProg(b){
   const f = factsC(), id = b.id;
   const T = {first:[f.total,1],t10:[f.total,10],t25:[f.total,25],t50:[f.total,50],goal1:[f.goalWeeks,1],streak4:[f.streakMax,4," weeks"],streak8:[f.streakMax,8," weeks"],
@@ -3843,7 +3870,7 @@ function yogaSheet(){
     <button class="start" data-kind="yoga" data-act="mobility"><span class="stripe"></span><span><b>Glute Mobility</b><small>${stepsMin(curMob().steps)} min · today: ${esc(curMob().n)} · no session clock</small><small>${last?"Last done "+ago(last):"Not done yet"}</small></span><span class="arrow">›</span></button>
     <p class="small muted" style="margin:0">Glute mobility doesn't count as a session. It helps with sore muscles and keeps your hips mobile.</p>
     <p class="exn" style="margin:4px 0 0;font-weight:600">Short routines</p>
-    <div class="alts"><button class="altrow" data-act="study"><b>Study break · 5 min</b><small>Neck, shoulders and breathing on your chair. No mat needed.</small></button>${["hips","shoulders","runner","stretch"].map(id => `<button class="altrow" data-act="mob" data-id="${id}"><b>${esc(MOB[id].n)} · ${stepsMin(MOB[id].steps)} min</b><small>${esc(MOB[id].why)}</small></button>`).join("")}</div>
+    <div class="alts"><button class="altrow" data-act="flexcheck"><b>Flexibility check · 30 s${NFYoga.flexDueIn(S.settings.flex, Date.now()) ? "" : ` <span class="ysug">Due</span>`}</b><small>How far you reach in a forward fold. Every two weeks.</small></button><button class="altrow" data-act="study"><b>Study break · 5 min</b><small>Neck, shoulders and breathing on your chair. No mat needed.</small></button>${["hips","shoulders","runner","stretch"].map(id => `<button class="altrow" data-act="mob" data-id="${id}"><b>${esc(MOB[id].n)} · ${stepsMin(MOB[id].steps)} min</b><small>${esc(MOB[id].why)}</small></button>`).join("")}</div>
     <button class="secondary" data-act="closesheet">Cancel</button>`);
 }
 // id: one of MOB; without an id the glute routines take turns
@@ -3854,6 +3881,57 @@ function startMobility(id){
     if(screen==="home") renderHome();
     toast(r && id!=="hips" ? "Nice stretch. Well done 🧘‍♀️" : "Nice stretch. Your hips say thanks 🧘‍♀️");
   }});
+}
+
+/* ================= Beweglichkeits-Check: wie weit kommst du im Vorbeugen? =================
+   Alle 14 Tage, 30 Sekunden. Gespeichert in S.settings.flex [{t, v}], Logik in yoga.js (addFlex, flexTrend, flexDueIn). */
+const flexChecks = () => NFYoga.flexList(S.settings.flex);
+const flexDay = t => new Date(t).toLocaleDateString("en-GB", {day:"numeric", month:"short"});
+function flexSheet(err){
+  sheet(`<h3>Flexibility check</h3>
+    <ol class="hsteps flexsteps">
+      <li>Warm up first: march on the spot for a minute.</li>
+      <li>Stand with your feet together, knees straight but not locked.</li>
+      <li>Breathe out and fold forward slowly. <b>No bouncing.</b></li>
+      <li>Hold for three breaths at your furthest point.</li></ol>
+    <p class="exn" style="margin:0;font-weight:600">Where do your fingertips reach?</p>
+    <div class="flexopts" role="group" aria-label="How far you reach">${NFYoga.FLEX.slice().reverse().map(x => `<button class="flexopt" data-act="flexpick" data-v="${x.v}"><i style="width:${x.v*20}%"></i><span>${esc(x.n)}</span></button>`).join("")}</div>
+    ${err ? `<p class="err" role="alert">${esc(err)}</p>` : ""}
+    <p class="small muted" style="margin:0">Stop if anything hurts. Compare at the same time of day, warm muscles reach further.</p>
+    <button class="secondary" data-act="closesheet">Cancel</button>`);
+}
+function flexSave(v){
+  const r = NFYoga.addFlex(S.settings.flex, v, Date.now());
+  if(!r.ok) return flexSheet(r.err);
+  S.settings.flex = r.list;
+  const fresh = checkBadges(false); save();
+  const tr = NFYoga.flexTrend(r.list), d = tr.prev ? tr.last.v - tr.prev.v : 0;
+  const head = !tr.prev ? `Your starting point: ${esc(NFYoga.flexName(tr.last.v))}`
+    : d > 0 ? `${esc(NFYoga.flexName(tr.prev.v))} → ${esc(NFYoga.flexName(tr.last.v))} 🎉`
+    : d === 0 ? `${esc(NFYoga.flexName(tr.last.v))}, same as last time` : `${esc(NFYoga.flexName(tr.last.v))} today`;
+  const txt = !tr.prev ? `Check again in ${NFYoga.FLEX_EVERY} days and watch it change. Sessions like “After your run” and “Wind down” stretch exactly these muscles.`
+    : d > 0 ? `One step further than on ${flexDay(tr.prev.t)}${d > 1 ? ` (${d} steps)` : ""}. Your yoga is paying off.`
+    : d === 0 ? `Flexibility grows slowly. Keep stretching, the next check is in ${NFYoga.FLEX_EVERY} days.`
+    : `A bit less than on ${flexDay(tr.prev.t)}. That happens: cold muscles, a long day at the desk. Your best so far is ${esc(NFYoga.flexName(tr.best))}.`;
+  if(screen==="home") render();
+  sheet(`<h3>${head}</h3><p class="muted" style="margin:0">${txt}</p>${fresh.some(b => b.id==="toes") ? `<p class="hint">New badge: Toes touched ✋</p>` : ""}
+    <button class="primary yoga" data-act="closesheet">Done</button>`);
+}
+/* Bereich im Progress-Tab: aktueller Stand, Verlauf als Stufen, nächster Check */
+function flexHtml(){
+  const l = flexChecks(), tr = NFYoga.flexTrend(l), due = NFYoga.flexDueIn(l, Date.now());
+  const goal = yGoals().includes("toes");
+  if(!tr) return `<section class="pblock c-yoga"><h2 class="sec">Flexibility</h2><div class="card"><p style="margin:0">How far can you reach in a forward fold? Do the 30-second check${goal ? " for your goal “Touch your toes”" : ""} and watch it change every two weeks.</p>
+    <button class="secondary flexgo" data-act="flexcheck">Start the check</button></div></section>`;
+  const pts = l.slice(-12), W0 = 300, H0 = 120, x = i => pts.length===1 ? W0/2 : 16 + i*(W0-32)/(pts.length-1), y = v => H0 - 12 - (v-1)*(H0-24)/4;
+  const line = pts.map((c,i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(c.v).toFixed(1)}`).join("");
+  return `<section class="pblock c-yoga"><h2 class="sec">Flexibility</h2><div class="card">
+    <div class="flexnow"><div><small>Now</small><b>${esc(NFYoga.flexName(tr.last.v))}</b></div><div><small>Since ${flexDay(tr.first.t)}</small><b class="tnum">${tr.gained > 0 ? "+" + tr.gained : tr.gained} ${Math.abs(tr.gained)===1 ? "step" : "steps"}</b></div></div>
+    <svg class="flexchart" viewBox="0 0 ${W0} ${H0}" role="img" aria-label="Your flexibility checks: ${pts.map(c => NFYoga.flexName(c.v)).join(", ")}">
+      <line x1="0" x2="${W0}" y1="${y(NFYoga.TOES)}" y2="${y(NFYoga.TOES)}" class="toesline"/><text x="${W0-4}" y="${y(NFYoga.TOES)-5}" text-anchor="end">Toes</text>
+      <path d="${line}"/>${pts.map((c,i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(c.v).toFixed(1)}" r="4.5"/>`).join("")}</svg>
+    <p class="small" style="margin:0">${tr.toes ? "You reached your toes ✋ " : goal ? `Goal: Toes. ${NFYoga.TOES - tr.last.v > 0 ? `${NFYoga.TOES - tr.last.v} ${NFYoga.TOES - tr.last.v===1 ? "step" : "steps"} to go. ` : ""}` : ""}${due ? `Next check in ${due} ${due===1 ? "day" : "days"}.` : "Time for your next check."}</p>
+    ${due ? "" : `<button class="secondary flexgo" data-act="flexcheck">Check now</button>`}</div></section>`;
 }
 
 /* ================= Weather where you are ================= */
@@ -5313,6 +5391,8 @@ document.addEventListener("click", async ev => {
     case "yogalevel": S.settings.yogaLevel = b.dataset.v==="known" ? "known" : "new"; save(); renderSession(); break;
     case "yogavoice": S.settings.yogaVoice = !yVoice(); save(); if(S.settings.yogaVoice){ primeVoice(); say("Voice on. I'll read each pose."); } renderSession(); break;
     case "tmvoice": if(TM){ S.settings.yogaVoice = !yVoice(); save(); TM.spokenI = -1; if(!S.settings.yogaVoice) try{ speechSynthesis.cancel(); }catch(e){} drawTimer(); } break;
+    case "flexcheck": flexSheet(); break;
+    case "flexpick": flexSave(+b.dataset.v); break;
     case "yogapick": { const id = b.dataset.id; if(!NFYoga.byId(id)) break; S.active.yoga.sid = id; S.settings.yogaSid = id; save(); renderSession(); window.scrollTo({top:0, behavior:"smooth"}); break; }
     case "study": closeSheet(); primeVoice(); startStudyBreak(); break;
     case "warmskip": S.active.warm = true; save(); renderSession(); break;

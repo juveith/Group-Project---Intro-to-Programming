@@ -154,3 +154,74 @@ test("tensionText says down, same or up", () => {
   assert.match(Y.tensionText(2, 3), /^Up from 2 to 3/);
   assert.equal(Y.tensionText(4, null), "");
 });
+
+/* ---------- suggestions that follow your goals ---------- */
+test("goals: sleep brings wind down from 20:00, back and toes fill the free hours", () => {
+  const day = (h) => at(2026, 11, 17, h);
+  assert.equal(Y.suggest(day(20), false), "", "no goal, 20:00: nothing special");
+  assert.equal(Y.suggest(day(20), false, undefined, ["sleep"]), "winddown");
+  assert.equal(Y.suggestWhy(day(22), false, undefined, ["sleep"]).why, "For your goal: sleep better");
+  assert.equal(Y.suggest(day(15), false, undefined, ["back"]), "back");
+  assert.equal(Y.suggest(day(15), false, undefined, ["toes"]), "afterrun");
+  assert.equal(Y.suggest(day(15), false, undefined, ["toes", "back"]), "afterrun", "the goal picked first wins");
+  assert.equal(Y.suggest(day(15), false, undefined, ["run10k", "pullup"]), "", "other goals are ignored");
+});
+
+test("goals: exam stress brings the study break in the afternoon, time of day still comes first", () => {
+  assert.equal(Y.suggest(at(2026, 11, 17, 14), false, undefined, ["exam"]), "study");
+  assert.equal(Y.suggest(at(2026, 11, 17, 11), false, undefined, ["exam"]), "");
+  assert.equal(Y.suggest(at(2026, 11, 17, 8), false, undefined, ["exam", "back"]), "morning");
+  assert.equal(Y.suggest(at(2026, 11, 17, 15), true, undefined, ["back"]), "afterrun");
+  assert.match(Y.suggestWhy(at(2026, 11, 17, 15), true, undefined, ["toes"]).why, /touch your toes/);
+  assert.equal(Y.suggestWhy(at(2026, 12, 9, 15), false, undefined, ["exam"]).why, "For your goal: less exam stress");
+});
+
+test("every goal points to a session that exists", () => {
+  Object.values(Y.GOAL_SESSION).forEach(id => assert.ok(Y.byId(id), id));
+});
+
+/* ---------- flexibility check ---------- */
+test("flexibility: only levels 1 to 5", () => {
+  assert.equal(Y.validFlex(3), 3);
+  assert.equal(Y.validFlex("4"), 4);
+  [0, 6, 2.5, "x", null].forEach(v => assert.equal(Y.validFlex(v), 0));
+  assert.equal(Y.flexName(4), "Toes");
+  assert.equal(Y.addFlex([], 9, Date.now()).ok, false);
+});
+
+test("flexibility: one check per day, sorted, last 60 kept", () => {
+  const t0 = at(2026, 11, 1, 9);
+  let l = Y.addFlex([], 2, t0).list;
+  l = Y.addFlex(l, 3, t0 + 3600e3).list;                 // same day: replaces
+  assert.deepEqual(l.map(c => c.v), [3]);
+  l = Y.addFlex(l, 4, t0 + 14 * 864e5).list;
+  assert.deepEqual(l.map(c => c.v), [3, 4]);
+  let many = [];
+  for (let i = 0; i < 70; i++) many = Y.addFlex(many, 1 + (i % 5), t0 + i * 864e5).list;
+  assert.equal(many.length, 60);
+  assert.ok(many[0].t < many[59].t);
+});
+
+test("flexibility: due every 14 days, first one right away", () => {
+  const t0 = at(2026, 11, 1, 9);
+  assert.equal(Y.flexDueIn([], t0), 0);
+  const l = Y.addFlex([], 2, t0).list;
+  assert.equal(Y.flexDueIn(l, t0 + 864e5), 13);
+  assert.equal(Y.flexDueIn(l, t0 + 14 * 864e5), 0);
+  assert.equal(Y.flexDueIn(l, t0 + 30 * 864e5), 0);
+});
+
+test("flexibility: progress since the start and toes reached", () => {
+  const t0 = at(2026, 10, 1, 9);
+  assert.equal(Y.flexTrend([]), null);
+  let l = [];
+  [2, 3, 3, 4].forEach((v, i) => { l = Y.addFlex(l, v, t0 + i * 14 * 864e5).list; });
+  const tr = Y.flexTrend(l);
+  assert.equal(tr.n, 4);
+  assert.equal(tr.first.v, 2);
+  assert.equal(tr.last.v, 4);
+  assert.equal(tr.prev.v, 3);
+  assert.equal(tr.gained, 2);
+  assert.equal(tr.toes, true);
+  assert.equal(Y.flexTrend([{ t: t0, v: 7 }, { t: t0, v: 2 }]).n, 1, "invalid entries are ignored");
+});

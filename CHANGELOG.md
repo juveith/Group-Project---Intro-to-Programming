@@ -2,6 +2,16 @@
 
 Alle Versionen der App, die neueste oben.
 
+## v2.12 – Yoga that follows your goals, flexibility check
+
+- The yoga goals from the questionnaire now steer the suggestion: “Sleep better” brings Wind down from 20:00, “Exam-week stress relief” the study break in the afternoon, “Desk-proof back” Back and neck, “Touch your toes” After your run (calves and hamstrings). Time of day and today's run still come first
+- The yoga screen says why: “For your goal: touch your toes · …”
+- A suggestion is now preselected even if you picked another session before; without a suggestion your last pick stays
+- “Sleep better”: from 20:00 the Today tab shows “Wind down tonight” with a start button, until you did yoga that day
+- New **flexibility check** (yoga menu and Progress tab): stand, fold forward, tap how far you reach (knees, shins, ankles, toes, palms on the floor). Every 14 days, one per day; the result compares with the last check
+- Progress tab: new Flexibility block with the current level, the steps gained and a chart with the toes line; new badge “Toes touched”
+- `suggestWhy`, `addFlex`, `flexTrend`, `flexDueIn` in `app/yoga.js`; 7 new tests (166 in total)
+
 ## v2.11 – Runs near you
 
 - New in the running menu: **Runs near you**, at most five suggestions

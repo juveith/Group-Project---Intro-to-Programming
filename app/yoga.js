@@ -199,16 +199,69 @@
   }
 
   /* Which session fits right now? now: time, ranToday: logged a run today. "" = no suggestion. */
-  function suggest(now, ranToday, weeks) {
-    const h = new Date(now).getHours();
-    if (h >= 21 || h < 4) return "winddown";
-    if (ranToday) return "afterrun";
-    if (h >= 4 && h < 10) return "morning";
-    if (examWeek(now, weeks) && h >= 9 && h < 20) return "study";
-    return "";
+  /* ---------- suggestions that follow your goals ----------
+     Yoga goals from the questionnaire (GOALS.y in plan.js) and the session that serves each best */
+  const GOAL_SESSION = { toes: "afterrun", back: "back", exam: "study", sleep: "winddown" };
+  const GOAL_WHY = {
+    toes: "For your goal: touch your toes",
+    back: "For your goal: a desk-proof back",
+    exam: "For your goal: less exam stress",
+    sleep: "For your goal: sleep better"
+  };
+
+  /* Which session fits right now, and why. goals: the runner's goal ids (others are ignored).
+     Time of day and today's run come first; in between, your goals decide. */
+  function suggestWhy(now, ranToday, weeks, goals) {
+    const h = new Date(now).getHours(), g = (goals || []).filter(id => GOAL_SESSION[id]);
+    const has = id => g.includes(id);
+    if (h >= 21 || h < 4) return { id: "winddown", why: has("sleep") ? GOAL_WHY.sleep : "It's late: time to wind down" };
+    if (has("sleep") && h >= 20) return { id: "winddown", why: GOAL_WHY.sleep };
+    if (ranToday) return { id: "afterrun", why: has("toes") ? "You ran today, and it helps you touch your toes" : "You ran today" };
+    if (h >= 4 && h < 10) return { id: "morning", why: "Good morning" };
+    if (examWeek(now, weeks) && h >= 9 && h < 20) return { id: "study", why: has("exam") ? GOAL_WHY.exam : "It's exam weeks" };
+    if (has("exam") && h >= 13 && h < 19) return { id: "study", why: GOAL_WHY.exam };
+    // back or toes: the one picked first
+    const pick = g.find(id => id === "back" || id === "toes");
+    if (pick) return { id: GOAL_SESSION[pick], why: GOAL_WHY[pick] };
+    return { id: "", why: "" };
+  }
+  function suggest(now, ranToday, weeks, goals) { return suggestWhy(now, ranToday, weeks, goals).id; }
+
+  /* ---------- flexibility check ----------
+     Standing forward fold, knees straight: how far do the fingertips reach? One step per level. */
+  const FLEX = [
+    { v: 1, n: "Knees" }, { v: 2, n: "Shins" }, { v: 3, n: "Ankles" }, { v: 4, n: "Toes" }, { v: 5, n: "Palms on the floor" }
+  ];
+  const FLEX_EVERY = 14, FLEX_KEEP = 60, TOES = 4;
+  const validFlex = v => { const n = Number(v); return Number.isInteger(n) && n >= 1 && n <= 5 ? n : 0; };
+  const flexName = v => (FLEX.find(x => x.v === validFlex(v)) || { n: "" }).n;
+  const flexList = checks => (Array.isArray(checks) ? checks : []).filter(c => c && isFinite(c.t) && validFlex(c.v)).slice().sort((a, b) => a.t - b.t);
+  /* Adds a check; at most one per day (a new one the same day replaces it), the last 60 are kept */
+  function addFlex(checks, v, now) {
+    const n = validFlex(v);
+    if (!n) return { ok: false, err: "Choose how far you reach." };
+    const day = ymd(now), list = flexList(checks).filter(c => ymd(c.t) !== day);
+    list.push({ t: now, v: n });
+    return { ok: true, list: list.slice(-FLEX_KEEP) };
+  }
+  /* Days until the next check (0 = due now). The first check is always due. */
+  function flexDueIn(checks, now) {
+    const l = flexList(checks);
+    if (!l.length) return 0;
+    return Math.max(0, Math.ceil((l[l.length - 1].t + FLEX_EVERY * 864e5 - now) / 864e5 - 0.5));
+  }
+  /* Where you are: first, last, previous, best, steps gained since the start, toes reached? */
+  function flexTrend(checks) {
+    const l = flexList(checks);
+    if (!l.length) return null;
+    const first = l[0], last = l[l.length - 1], prev = l.length > 1 ? l[l.length - 2] : null;
+    const best = Math.max(...l.map(c => c.v));
+    return { n: l.length, first, last, prev, best, gained: last.v - first.v, toes: best >= TOES };
   }
 
-  const api = { SESSIONS, EXAM_WEEKS, MIN_STEP, SUN, EASIER, expandSun, easier, cue, validTension, tension, tensionText, byId, total, minutes, lengthFor, stepsFor, examWeek, suggest };
+
+  const api = { SESSIONS, EXAM_WEEKS, MIN_STEP, SUN, EASIER, expandSun, easier, cue, validTension, tension, tensionText, byId, total, minutes, lengthFor, stepsFor, examWeek, suggest,
+    GOAL_SESSION, suggestWhy, FLEX, FLEX_EVERY, TOES, validFlex, flexName, flexList, addFlex, flexDueIn, flexTrend };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.NFYoga = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
