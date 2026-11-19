@@ -2,6 +2,16 @@
 
 Alle Versionen der App, die neueste oben.
 
+## v2.13 – Security: headers, pinned scripts, protected functions
+
+- **Fixed:** a changed backup file could put HTML (and with it script) into exercise and workout names, which then ran on the Progress tab. Names from storage, backups and the cloud sync are now cleaned when they are loaded and escaped when they are shown; the custom exercise form also refuses quotes
+- Security headers for the live site (`netlify.toml`): Content-Security-Policy that only allows our own scripts and the services the app uses, no framing, no type sniffing, HTTPS only, location only for the site itself
+- The app's script moved from `index.html` into `app/app.js`, so the policy can forbid inline scripts
+- The text recognition script is checked with Subresource Integrity: a changed file on the CDN is refused, with a clear message
+- The Netlify Functions (Strava, loops) only accept calls from the site itself, limit each IP address and refuse large requests (`netlify/lib/guard.mjs`)
+- New “Security” section in the README: what is protected and the limits we know about
+- 10 new tests (176 in total)
+
 ## v2.12 – Yoga that follows your goals, flexibility check
 
 - The yoga goals from the questionnaire now steer the suggestion: “Sleep better” brings Wind down from 20:00, “Exam-week stress relief” the study break in the afternoon, “Desk-proof back” Back and neck, “Touch your toes” After your run (calves and hamstrings). Time of day and today's run still come first

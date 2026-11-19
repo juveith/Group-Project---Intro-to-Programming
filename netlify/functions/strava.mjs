@@ -10,9 +10,14 @@
 
    Tokens are passed through and never stored or logged here. */
 
+import { guard, makeLimiter, readJson } from "../lib/guard.mjs";
+
 const STRAVA = "https://www.strava.com";
 const TOKEN_RE = /^[A-Za-z0-9]{20,200}$/;
 const CODE_RE = /^[A-Za-z0-9]{10,200}$/;
+
+// At most 120 requests per 10 minutes per IP address: a whole year of runs is up to 20 pages, plus login and refresh
+const limiter = makeLimiter(120, 10 * 60 * 1000);
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
@@ -39,14 +44,16 @@ async function strava(path, init) {
 const fail = r => json({ error: r.status === 401 ? "unauthorized" : r.status === 429 ? "rate_limited" : "strava_error" },
   r.status === 401 || r.status === 429 ? r.status : 502);
 
-export default async function handler(req) {
+export default async function handler(req, context) {
+  const refused = guard(req, context, limiter);
+  if (refused) return refused;
   const id = process.env.STRAVA_CLIENT_ID, secret = process.env.STRAVA_CLIENT_SECRET;
   if (!id || !secret) return json({ error: "not_configured" }, 503);
   if (req.method === "GET") return json({ clientId: id });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   let b;
-  try { b = await req.json(); } catch (e) { return json({ error: "bad_request" }, 400); }
+  try { b = await readJson(req); } catch (e) { return json({ error: e.message === "too_large" ? "too_large" : "bad_request" }, e.message === "too_large" ? 413 : 400); }
   if (!b || typeof b !== "object") return json({ error: "bad_request" }, 400);
 
   if (b.action === "token" || b.action === "refresh") {

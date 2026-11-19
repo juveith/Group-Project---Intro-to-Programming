@@ -35,7 +35,8 @@ The app needs no build step:
 
 | File | Content |
 |---|---|
-| `app/index.html` | The app: layout, design (CSS) and logic (JavaScript) |
+| `app/index.html` | The page: layout and design (CSS) |
+| `app/app.js` | The app itself: screens, sessions, storage and everything you tap (kept out of `index.html` so the site can forbid inline scripts) |
 | `app/plan.js` | Sign-up validation, questionnaire checks, strength splits and plan suggestions (pure functions, tested) |
 | `app/exercises.js` | Exercise library, workout templates, search and checks for custom exercises (pure functions, tested) |
 | `app/run.js` | Running logic: reading runs from screenshots and from GPX, TCX and FIT files, checking the values, turning Strava activities into runs (pure functions, tested) |
@@ -46,6 +47,7 @@ The app needs no build step:
 | `app/img/ex/` | Exercise drawings from Everkinetic and Workout Guide, CC BY-SA 4.0, see `SOURCES.md` there |
 | `app/icon-*.png`, `app/apple-touch-icon.png` | App icons |
 | `netlify/functions/route.mjs` | Server part of “A loop from here” (keeps the openrouteservice key) |
+| `netlify/lib/guard.mjs` | Shared protection for the functions: same site only, rate limit, small requests |
 | `netlify/functions/strava.mjs` | Server part of the Strava connection (keeps the client secret) |
 | `netlify.toml` | Netlify settings: publishes `app`, runs the Strava function |
 | `app/INSTALL.txt` | How to install the app on a phone |
@@ -57,6 +59,7 @@ The app needs no build step:
 | `tests/muscles.test.js` | Tests for `app/muscles.js` |
 | `tests/history.test.js` | Tests for importing a training history (Garmin CSV, Strava archive, files) |
 | `tests/nearby.test.js` | Tests for “Runs near you” (routes, loop link and shape, route function) |
+| `tests/guard.test.js` | Tests for the protection of the functions |
 | `tests/strava.test.js` | Tests for the Strava connection (app side and function) |
 
 ## Run
@@ -113,6 +116,24 @@ Notes:
 - New Strava API apps can only be used by a few athletes at first. If more people want to connect, ask Strava for more capacity on the API settings page.
 - NOVAFit only asks for read access to activities. The login stays on the phone under its own storage key, so it isn't part of backups or the cloud sync. *Settings → Strava → Disconnect* removes it and the access on Strava.
 - Strava allows 100 requests per 15 minutes per app. NOVAFit checks at most every 15 minutes per phone.
+
+## Security
+
+What is protected, and what isn't:
+
+- **No secrets in the repository.** The Strava and openrouteservice keys live only in Netlify's environment variables and are used by the functions; the app never sees them.
+- **Passwords** are stored only as a salted PBKDF2-SHA256 hash, never as text.
+- **Input is checked** where it comes in: forms (with an error next to the field), imported files (GPX, FIT, TCX, CSV, ZIP) and backup files. Text that comes back from a backup or the cloud sync is cleaned before it is shown (`safeText`, `safeCustom` in `app/exercises.js`), and names are escaped in the HTML.
+- **Content-Security-Policy** (`netlify.toml`): the browser runs only our own scripts (no inline scripts), the pinned text recognition and OneSignal, and only connects to the services the app uses. Further headers stop the app from being framed and from sniffing file types.
+- **Pinned outside code:** the text recognition is fixed to version 5.1.1 and checked with Subresource Integrity, so a changed file on the CDN is refused. The app itself has no npm dependencies.
+- **The functions** only accept calls from the site itself, limit each IP address (Strava 120, loops 20 per 10 minutes) and refuse large requests (`netlify/lib/guard.mjs`).
+
+Limits we know about:
+
+- **Data lives on the phone.** Training data is in the browser's storage. “Lock app” hides the app behind the password, but it is not encryption: someone with access to the unlocked phone and the browser's developer tools could read the data. A real fix needs accounts on a server.
+- **OneSignal** has to be loaded from its own address for major version 16, which can change without notice, so it can't be checked with Subresource Integrity.
+- **The rate limit** is kept in the memory of a function instance: it slows abuse down but resets when Netlify starts a new instance.
+- **The Strava tokens** are kept in the browser's storage on the phone (not in backups or the sync), like most web apps do.
 
 ## Test
 

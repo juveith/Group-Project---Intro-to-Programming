@@ -7,8 +7,13 @@
 
    The position is used for this one request only: never stored or logged here. */
 
+import { guard, makeLimiter, readJson } from "../lib/guard.mjs";
+
 const ORS = "https://api.openrouteservice.org/v2/directions/foot-walking/geojson";
 const MAX_POINTS = 400;
+
+// At most 20 requests per 10 minutes per IP address: each loop is one request to the free route service
+const limiter = makeLimiter(20, 10 * 60 * 1000);
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
@@ -22,14 +27,16 @@ function thin(coords) {
   return out.map(c => [Math.round(c[0] * 1e5) / 1e5, Math.round(c[1] * 1e5) / 1e5]);
 }
 
-export default async function handler(req) {
+export default async function handler(req, context) {
+  const refused = guard(req, context, limiter);
+  if (refused) return refused;
   const key = process.env.ORS_API_KEY;
   if (!key) return json({ error: "not_configured" }, 503);
   if (req.method === "GET") return json({ ok: true });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   let b;
-  try { b = await req.json(); } catch (e) { return json({ error: "bad_request" }, 400); }
+  try { b = await readJson(req); } catch (e) { return json({ error: e.message === "too_large" ? "too_large" : "bad_request" }, e.message === "too_large" ? 413 : 400); }
   const lat = Number(b && b.lat), lon = Number(b && b.lon), km = Number(b && b.km), seed = b && b.seed == null ? 1 : Number(b.seed);
   if (!(Math.abs(lat) <= 90 && Math.abs(lon) <= 180) || !(km >= 2 && km <= 30) || !(Number.isInteger(seed) && seed >= 1 && seed <= 99))
     return json({ error: "bad_request" }, 400);

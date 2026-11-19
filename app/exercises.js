@@ -313,7 +313,7 @@
     if (!name) errors.name = "Enter a name";
     else if (name.length < 3) errors.name = "Use at least 3 characters";
     else if (name.length > 40) errors.name = "Use 40 characters or fewer";
-    else if (/[<>{}]/.test(name)) errors.name = "Use letters, numbers and simple punctuation only";
+    else if (/[<>{}"`]/.test(name)) errors.name = "Use letters, numbers and simple punctuation only";
     if (!PARTS.includes(part)) errors.part = "Choose a body part";
     if (!EQUIP.includes(eq)) errors.eq = "Choose the equipment";
     if (!TYPES[type]) errors.type = "Choose how you log it";
@@ -324,6 +324,21 @@
     }
     const ok = Object.keys(errors).length === 0;
     return { ok, errors, value: ok ? { n: customName(name, eq), eq, part, type } : null };
+  }
+
+  /* Cleans user text that comes back from storage, a backup file or the cloud sync:
+     no markup characters, single spaces, at most `max` characters. Empty → fallback. */
+  function safeText(v, max, fallback) {
+    const t = String(v == null ? "" : v).replace(/[<>{}"`]/g, "").replace(/\s+/g, " ").trim().slice(0, max || 60);
+    return t || (fallback || "");
+  }
+  /* Custom exercises from storage or a backup: keep only well-formed ones, with a clean name.
+     The form checks new exercises (validateCustom); this protects against edited or broken files. */
+  function safeCustom(list) {
+    if (!Array.isArray(list)) return [];
+    const seen = new Set();
+    return list.filter(c => c && typeof c === "object" && /^[A-Za-z0-9_-]{1,40}$/.test(String(c.id)) && !seen.has(c.id) && seen.add(c.id) && !BY_ID[c.id] && TYPES[c.type])
+      .map(c => Object.assign({}, c, { n: safeText(c.n, 60, "Own exercise"), eq: safeText(c.eq, 20), part: safeText(c.part, 20), cue: safeText(c.cue, 200) }));
   }
 
   // Builds the stored custom exercise. `id` must be unique, e.g. "c" + a timestamp.
@@ -375,7 +390,7 @@
     return Object.entries(ex.m).filter(([, w]) => w >= .5).sort((a, b) => b[1] - a[1]).map(([k]) => MUSCLE_NAMES[k]).join(", ");
   }
 
-  const api = { RETIRED, TYPES, PARTS, EQUIP, PATTERNS, LIBRARY, BY_ID, DRAWINGS, TEMPLATES, TEMPLATE_ORDER, MUSCLE_NAMES,
+  const api = { safeText, safeCustom, RETIRED, TYPES, PARTS, EQUIP, PATTERNS, LIBRARY, BY_ID, DRAWINGS, TEMPLATES, TEMPLATE_ORDER, MUSCLE_NAMES,
     unitOf, search, alternatives, validateCustom, makeCustom, templateExercises, focusOf };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.NFEx = api;

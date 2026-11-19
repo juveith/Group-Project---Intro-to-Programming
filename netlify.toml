@@ -1,5 +1,29 @@
 # Netlify settings for NOVAFit (used when the site is connected to this GitHub repository)
-# The app is the plain folder "app" (no build step); the Strava connection runs as a function.
+# The app is the plain folder "app" (no build step); Strava and "A loop from here" run as functions.
 [build]
   publish = "app"
   functions = "netlify/functions"
+
+# Security headers for every page and file.
+# Content-Security-Policy: the browser only loads code and data from the places listed here.
+#   scripts   – our own files (no inline scripts), text recognition (cdn.jsdelivr.net, pinned + SRI),
+#               push messages (OneSignal); 'wasm-unsafe-eval' + blob: are needed by the text recognition worker
+#   connect   – our functions ('self'), weather (Open-Meteo), town name (BigDataCloud), OneSignal,
+#               and the files the service worker keeps for offline use (fonts, text recognition)
+#   styles    – inline style attributes are used throughout the app, so 'unsafe-inline' stays for styles only
+# Add a host here before the app uses a new outside service, or the browser will block it.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://cdn.onesignal.com https://api.onesignal.com; worker-src 'self' blob:; connect-src 'self' https://api.open-meteo.com https://api.bigdatacloud.net https://cdn.jsdelivr.net https://onesignal.com https://*.onesignal.com https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: blob: https://*.onesignal.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://onesignal.com; font-src 'self' data: https://fonts.gstatic.com; media-src 'self' blob: data:; frame-src https://*.onesignal.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; manifest-src 'self'"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()"
+    Strict-Transport-Security = "max-age=31536000"
+
+# The service worker must always be fetched fresh, so updates reach installed apps
+[[headers]]
+  for = "/OneSignalSDKWorker.js"
+  [headers.values]
+    Cache-Control = "no-cache"

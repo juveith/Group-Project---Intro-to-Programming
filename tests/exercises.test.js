@@ -167,3 +167,32 @@ test("every exercise in the library has a drawing, retired ones stay hidden", ()
 test("every workout template only uses exercises with a drawing", () => {
   for (const k of X.TEMPLATE_ORDER) for (const e of X.templateExercises(k)) assert.ok(e.img && !e.hidden, `${k}: ${e.id}`);
 });
+
+/* ---------- text from storage, backups and the cloud sync ---------- */
+test("safeText removes markup and quotes, keeps apostrophes", () => {
+  assert.equal(X.safeText('<img src=x onerror=alert(1)>Row', 60), "img src=x onerror=alert(1)Row");
+  assert.equal(X.safeText('Farmer\'s  "walk"', 60), "Farmer's walk");
+  assert.equal(X.safeText("   ", 40, "Own workout"), "Own workout");
+  assert.equal(X.safeText("x".repeat(100), 40).length, 40);
+});
+
+test("safeCustom keeps only well-formed custom exercises from a backup file", () => {
+  const list = X.safeCustom([
+    { id: "c1", n: "<b>Sled</b> push", type: "w", eq: "Other", part: "Legs" },
+    { id: "c1", n: "Duplicate", type: "w" },
+    { id: "bad id!", n: "Nope", type: "w" },
+    { id: "c2", n: "No type" },
+    { id: X.LIBRARY[0].id, n: "Takes over a library id", type: "w" },
+    null, "text"
+  ]);
+  assert.deepEqual(list.map(c => [c.id, c.n]), [["c1", "bSled/b push"]]);
+  assert.deepEqual(X.safeCustom("not a list"), []);
+});
+
+test("the custom exercise form refuses quotes and markup", () => {
+  ["Sled <push>", 'Sled "push"', "Sled {push}", "Sled `push`"].forEach(name => {
+    const r = X.validateCustom({ name, eq: "Other", part: "Legs", type: "w" }, []);
+    assert.equal(r.ok, false, name);
+  });
+  assert.equal(X.validateCustom({ name: "Farmer's carry", eq: "Other", part: "Legs", type: "w" }, []).ok, true);
+});
