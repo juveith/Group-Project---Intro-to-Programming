@@ -922,7 +922,7 @@ function planView(p){
   let h = `<div class="plview"><section class="planhd"><small>My running goal</small><h2>${esc(planTitle(p))}</h2>
     <p>${p.date ? `${left} ${left===1?"week":"weeks"} to go` : "no end date"}${pred ? ` · Current forecast: ${hms(pred)}` : ""}</p>
     <div class="pbars">${bars}</div>
-    <div class="pfoot"><span>${pg.n ? `Week ${pg.i+1} of ${pg.n}` : `Week ${pg.i+1}`}</span><span>${p.date ? (p.goal==="alster" ? "Test on " : "Race day ") + new Date(p.date).toLocaleDateString("en-GB", {day:"numeric", month:"short"}) : ""}</span></div></section>`;
+    <div class="plan-meta"><span>${pg.n ? `Week ${pg.i+1} of ${pg.n}` : `Week ${pg.i+1}`}</span><span>${p.date ? (p.goal==="alster" ? "Test on " : "Race day ") + new Date(p.date).toLocaleDateString("en-GB", {day:"numeric", month:"short"}) : ""}</span></div></section>`;
   h += wk(cw, "This week", true);
   if(nw) h += wk(nw, "Next week", false);
   if(planAll) W2.slice(pg.i+2).forEach(w => h += wk(w, `Week ${w.i+1} · ${weekRange(w.ws)}`, false));
