@@ -180,6 +180,36 @@ function guideNext(){
   TOUR.busy = true;
   setTimeout(() => { if(!TOUR) return; TOUR.busy = false; guideShow(0); }, 120);
 }
+const GPAD = 6;
+// Where the highlight goes for a step: the element, or down to `spanTo`, never taller than the screen allows
+function guideBox(st, el){
+  const r = el.getBoundingClientRect(), pad = GPAD, to = st.spanTo && $q(st.spanTo);
+  let h = to ? to.getBoundingClientRect().bottom - r.top : r.height;
+  h = Math.min(h, st.maxh || 1e5);
+  if(to) h = Math.min(h, window.innerHeight - Math.max(r.top, 0) - 250);   // leave room for the card below
+  return {r, h, box:`left:${r.left-pad}px;top:${r.top-pad}px;width:${r.width+2*pad}px;height:${h+2*pad}px`};
+}
+const tapPos = (r, h) => `left:${Math.max(4, Math.min(r.left, window.innerWidth-60))}px;top:${r.top>60 ? r.top-GPAD-26 : r.top+h+GPAD+6}px`;
+/* The page moved under the tour (a thumb scrolled, the phone turned, a picture loaded):
+   the highlight follows the element, so the ring is always where the button is */
+let guideRaf = 0;
+function guideReflow(){
+  guideRaf = 0;
+  if(!TOUR || TOUR.busy) return;
+  const st = TOUR.steps && TOUR.steps[TOUR.i], el = TOUR.el;
+  if(!st || st.pause || st.free || !el || !el.isConnected || !el.getClientRects().length) return;
+  const lay = document.getElementById("guide"); if(!lay) return;
+  const {r, h, box} = guideBox(st, el);
+  TOUR.rect = {l:r.left-GPAD, t:r.top-GPAD, w:r.width+2*GPAD, h:h+2*GPAD};
+  const ring = lay.querySelector(".tg-ring"), spot = lay.querySelector(".tg-spot:not(.soft)"), tap = lay.querySelector(".tg-tap");
+  if(ring) ring.setAttribute("style", box);
+  if(spot) spot.setAttribute("style", box);
+  if(tap) tap.setAttribute("style", tapPos(r, h));
+}
+const guideReflowSoon = () => { if(TOUR && !guideRaf) guideRaf = requestAnimationFrame(guideReflow); };
+window.addEventListener("scroll", guideReflowSoon, {passive:true, capture:true});   // capture: also a sheet that scrolls
+window.addEventListener("resize", () => { guideReflowSoon(); setTimeout(() => { const st = TOUR && TOUR.steps && TOUR.steps[TOUR.i]; if(st && TOUR.el && !st.pause && !st.free) guideFit(st, TOUR.el); }, 200); });
+
 // Shows the current step; a missing target is retried for a moment, then the step is skipped
 function guideShow(tries){
   if(!TOUR) return;
@@ -193,24 +223,54 @@ function guideShow(tries){
     return guideNext();
   }
   if(!st.noscroll && !el.closest(".sheet") && el.id!=="app") el.scrollIntoView({block:st.block || "center"});
+  else if(st.noscroll && !el.closest(".sheet")){   // no scrolling wanted, but never a part you can't see (landscape, small phones)
+    const b = el.getBoundingClientRect();
+    if(getComputedStyle(el).position!=="fixed" && (b.top < 0 || b.bottom > window.innerHeight - 8)) el.scrollIntoView({block:"center"});
+  }
   else if(el.closest(".sheet")){ const sh = el.closest(".sheet"), er = el.getBoundingClientRect(), sr = sh.getBoundingClientRect(); if(er.bottom > sr.bottom - 8 || er.top < sr.top) sh.scrollTop += er.top - sr.top - sh.clientHeight/3; }   // a long sheet: bring the button up
-  const r = el.getBoundingClientRect(), pad = 6, to = st.spanTo && $q(st.spanTo);
-  let h = to ? to.getBoundingClientRect().bottom - r.top : r.height;
-  h = Math.min(h, st.maxh || 1e5);
-  if(to) h = Math.min(h, window.innerHeight - Math.max(r.top, 0) - 250);   // leave room for the card below
-  const box = `left:${r.left-pad}px;top:${r.top-pad}px;width:${r.width+2*pad}px;height:${h+2*pad}px`;
+  const {r, h, box} = guideBox(st, el), pad = GPAD;
   const tabbar = document.querySelector(".tabbar"), low = tabbar && tabbar.getClientRects().length && !STORY && !TM && screen!=="session";
   const mid = r.top + h/2, onTop = st.nospot ? false : mid > window.innerHeight*0.5;
   const pos = st.compact ? "bottom:14px" : onTop ? "top:12px" : `bottom:${low ? 74 : 14}px`;
-  TOUR.target = st.tap ? el : null; TOUR.rect = {l:r.left-pad, t:r.top-pad, w:r.width+2*pad, h:h+2*pad};
+  TOUR.target = st.tap ? el : null; TOUR.el = el; TOUR.low = low; TOUR.rect = {l:r.left-pad, t:r.top-pad, w:r.width+2*pad, h:h+2*pad};
   lay.innerHTML = `<div class="tg-block" data-tg="${st.tap ? "tap" : ""}"></div>
     <div class="tg-spot ${st.nospot ? "soft" : ""}" style="${st.nospot ? "left:0;top:0;width:0;height:0" : box}"></div>
-    ${st.tap ? `<div class="tg-ring" style="${box}"></div><span class="tg-tap" style="left:${Math.max(4, Math.min(r.left, window.innerWidth-60))}px;top:${r.top>60 ? r.top-pad-26 : r.top+h+pad+6}px">Tap</span>` : ""}
+    ${st.tap ? `<div class="tg-ring" style="${box}"></div><span class="tg-tap" style="${tapPos(r, h)}">Tap</span>` : ""}
     ${exTag}
     <div class="tg-card ${st.compact ? "compact" : ""}" style="${pos}" role="dialog" aria-live="polite">
       <p class="tg-eb"><span>${esc(st.ch)}</span><span>${st.n} / ${st.of}</span></p><h3>${esc(st.t)}</h3><p>${esc(st.b)}</p>
       <div class="tg-dots">${Array.from({length:st.of}, (_,i) => `<i class="${i<st.n?"on":""}"></i>`).join("")}</div>
       <div class="tg-btns"><button class="tg-skip" data-tg="end">Skip tour</button>${st.tap ? `<span class="tg-hint">● Tap the highlighted part</span>` : `<button class="tg-next" data-tg="next">${esc(st.last || "Next")}</button>`}</div></div>`;
+  guideFit(st, el);
+}
+/* The card must never cover what it talks about (small phones, landscape): try the other side of
+   the screen, then move the page so the part sits above the card, then a smaller card */
+function guideFit(st, el){
+  const lay = document.getElementById("guide"), card = lay && lay.querySelector(".tg-card");
+  if(!card || st.nospot || !TOUR || !TOUR.rect) return;
+  const hit = () => { const c = card.getBoundingClientRect(), R = TOUR.rect; return c.bottom > R.t + 2 && c.top < R.t + R.h - 2; };
+  const place = top => { card.style.top = top ? "12px" : ""; card.style.bottom = top ? "" : `${TOUR.low ? 74 : 14}px`; };
+  if(!hit()) return;
+  const wasTop = !!card.style.top;
+  place(!wasTop); if(!hit()) return;
+  // the part scrolls with the page: bring it up under the header, with the card below it
+  if(!el.closest(".sheet") && getComputedStyle(el).position!=="fixed" && !el.closest(".tabbar, header, .tg-fixed")){
+    place(false);
+    const c = card.getBoundingClientRect(), R = TOUR.rect, room = c.top - 12;   // space above the card
+    if(R.h < room){ window.scrollBy(0, R.t - Math.max(64, room - R.h)); guideReflow(); if(!hit()) return; }
+  }
+  // inside a sheet: scroll the sheet so the part sits near its top, the card goes below
+  const sh = el.closest(".sheet");
+  if(sh){
+    place(false);
+    const c = card.getBoundingClientRect(), R = TOUR.rect, sr = sh.getBoundingClientRect();
+    sh.scrollTop += R.t - Math.max(sr.top + 8, 12); guideReflow(); if(!hit()) return;
+  }
+  card.classList.add("compact");
+  for(const top of [false, true]){ place(top); if(!hit()) return; }
+  card.classList.add("mini");   // last resort: title and hint only
+  for(const top of [false, true]){ place(top); if(!hit()) return; }
+  place(wasTop);
 }
 function guideClick(ev){
   const b = ev.target.closest("[data-tg]"); if(!b || !TOUR) return;
@@ -223,7 +283,10 @@ function guideClick(ev){
   if(a==="tap"){
     const R = TOUR.rect, t = TOUR.target;
     if(!t || !R) return;
-    if(ev.clientX>=R.l && ev.clientX<=R.l+R.w && ev.clientY>=R.t && ev.clientY<=R.t+R.h){
+    // inside the ring, or on the button itself wherever it is now (the page may have moved since)
+    const inside = (x, y, b, p) => x>=b.left-p && x<=b.right+p && y>=b.top-p && y<=b.bottom+p;
+    const now = t.isConnected && t.getBoundingClientRect();
+    if((ev.clientX>=R.l && ev.clientX<=R.l+R.w && ev.clientY>=R.t && ev.clientY<=R.t+R.h) || (now && now.width && inside(ev.clientX, ev.clientY, now, GPAD))){
       guideLayer().innerHTML = "";
       TOUR.busy = true; t.click();
       setTimeout(() => { if(!TOUR) return; TOUR.busy = false; guideNext(); }, 350);

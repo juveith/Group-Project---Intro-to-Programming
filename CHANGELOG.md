@@ -2,6 +2,13 @@
 
 Alle Versionen der App, die neueste oben. Alle Abschnitte mit *v2.15* gehören zur Version 2.15.0 (21.–22. Nov 2026).
 
+## Unreleased – The guided tour can't get stuck any more
+
+- Scrolling during a “Tap …” step left the red ring where the button had been; tapping the button itself did nothing, so the tour seemed stuck. The ring now follows the button when the page or a sheet scrolls or the phone turns, and a tap on the button counts wherever it is
+- On small phones (iPhone SE) and in landscape the tour card could cover the very part you had to tap (e.g. *This week* under *Your stories*). The card now moves to the other side, the page or sheet scrolls the part free, and as a last resort the card gets smaller
+- A part below the screen (landscape) is scrolled into view
+- Checked with a test user that walks the tour like a person in 14 setups (small/large phone, landscape, tablet, German, with and without example data, only one sport, slow taps, scrolling in between); two new browser tests
+
 ## Unreleased – Push notifications removed
 
 NOVAFit no longer offers push notifications: the setting, the card on Today, OneSignal and its tests are gone. Calendar reminders stay. The service worker keeps its file name and only does the offline cache.
